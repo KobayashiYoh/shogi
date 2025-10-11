@@ -1,4 +1,4 @@
-import type { Piece, Position } from './piece';
+import type { Piece, Position, PieceType } from './piece';
 import type { GameResult } from './gameResult';
 
 /**
@@ -14,4 +14,6 @@ export interface GameState {
   isFirstPlayerTurn: boolean;
   selectedPosition: Position | null;
   gameResult: GameResult;
+  capturedPiecesByFirstPlayer: PieceType[];
+  capturedPiecesBySecondPlayer: PieceType[];
 }
