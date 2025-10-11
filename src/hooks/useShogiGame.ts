@@ -1,26 +1,41 @@
 import { useState, useCallback } from 'react';
 import type { GameState } from '../types/gameState';
-import type { Position, Piece } from '../types/piece';
+import type { Position, Piece, PieceType } from '../types/piece';
 import { INITIAL_BOARD } from '../constants/initialBoard';
 import { getMovablePositions } from '../utils/moveablePositionsLogic';
 import {
   isValidMoveFromSelectedPosToTargetPos,
   calculateBoardAfterPieceMove,
   judgeGameResult,
+  canPlaceCapturedPiece,
+  placeCapturedPiece,
 } from '../utils/gameLogic';
+import {
+  addCapturedPiece,
+  removeCapturedPiece,
+} from '../utils/capturedPiecesLogic';
+
+/**
+ * ゲームの初期状態
+ */
+const INITIAL_GAME_STATE: GameState = {
+  board: INITIAL_BOARD,
+  isFirstPlayerTurn: true,
+  selectedPosition: null,
+  gameResult: 'playing_game',
+  capturedPiecesByFirstPlayer: [],
+  capturedPiecesBySecondPlayer: [],
+};
+
 
 /**
  * 将棋ゲームの状態管理を行うカスタムフック
  */
 export const useShogiGame = () => {
-  const [gameState, setGameState] = useState<GameState>({
-    board: INITIAL_BOARD,
-    isFirstPlayerTurn: true,
-    selectedPosition: null,
-    gameResult: 'playing_game',
-  });
-
+  const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
+  const [selectedCapturedPiece, setSelectedCapturedPiece] =
+    useState<PieceType | null>(null);
 
   /**
    * 同じマスがクリックされた場合の処理
@@ -54,22 +69,52 @@ export const useShogiGame = () => {
    */
   const handlePieceMove = useCallback(
     (fromPosition: Position, toPosition: Position) => {
-      const newBoard = calculateBoardAfterPieceMove(
+      const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
         gameState.board,
         fromPosition,
         toPosition
       );
       const gameResult = judgeGameResult(newBoard);
 
+      if (!capturedPiece) {
+        setGameState({
+          board: newBoard,
+          isFirstPlayerTurn: !gameState.isFirstPlayerTurn,
+          selectedPosition: null,
+          gameResult,
+          capturedPiecesByFirstPlayer: gameState.capturedPiecesByFirstPlayer,
+          capturedPiecesBySecondPlayer: gameState.capturedPiecesBySecondPlayer,
+        });
+        setPossibleMoves([]);
+        return;
+      }
+
+      const newCapturedByFirst = gameState.isFirstPlayerTurn
+        ? addCapturedPiece(gameState.capturedPiecesByFirstPlayer, capturedPiece)
+        : gameState.capturedPiecesByFirstPlayer;
+      const newCapturedBySecond = !gameState.isFirstPlayerTurn
+        ? addCapturedPiece(
+            gameState.capturedPiecesBySecondPlayer,
+            capturedPiece
+          )
+        : gameState.capturedPiecesBySecondPlayer;
+
       setGameState({
         board: newBoard,
         isFirstPlayerTurn: !gameState.isFirstPlayerTurn,
         selectedPosition: null,
         gameResult,
+        capturedPiecesByFirstPlayer: newCapturedByFirst,
+        capturedPiecesBySecondPlayer: newCapturedBySecond,
       });
       setPossibleMoves([]);
     },
-    [gameState.board, gameState.isFirstPlayerTurn]
+    [
+      gameState.board,
+      gameState.isFirstPlayerTurn,
+      gameState.capturedPiecesByFirstPlayer,
+      gameState.capturedPiecesBySecondPlayer,
+    ]
   );
 
   /**
@@ -89,6 +134,45 @@ export const useShogiGame = () => {
       handleOwnPieceClick(position, clickedPiece);
     },
     [handleOwnPieceClick]
+  );
+
+  /**
+   * 持ち駒を配置する処理
+   */
+  const handlePlaceCapturedPiece = useCallback(
+    (position: Position, pieceType: PieceType, isFirstPlayerTurn: boolean) => {
+      const { board } = gameState;
+
+      if (!canPlaceCapturedPiece(board, position)) {
+        return;
+      }
+
+      const newBoard = placeCapturedPiece(
+        board,
+        position,
+        pieceType,
+        isFirstPlayerTurn
+      );
+      const gameResult = judgeGameResult(newBoard);
+
+      const newCapturedByFirst = isFirstPlayerTurn
+        ? removeCapturedPiece(gameState.capturedPiecesByFirstPlayer, pieceType)
+        : gameState.capturedPiecesByFirstPlayer;
+      const newCapturedBySecond = !isFirstPlayerTurn
+        ? removeCapturedPiece(gameState.capturedPiecesBySecondPlayer, pieceType)
+        : gameState.capturedPiecesBySecondPlayer;
+
+      setGameState({
+        board: newBoard,
+        isFirstPlayerTurn: !isFirstPlayerTurn,
+        selectedPosition: null,
+        gameResult,
+        capturedPiecesByFirstPlayer: newCapturedByFirst,
+        capturedPiecesBySecondPlayer: newCapturedBySecond,
+      });
+      setSelectedCapturedPiece(null);
+    },
+    [gameState]
   );
 
   /**
@@ -145,6 +229,15 @@ export const useShogiGame = () => {
         return;
       }
 
+      if (selectedCapturedPiece) {
+        handlePlaceCapturedPiece(
+          position,
+          selectedCapturedPiece,
+          isFirstPlayerTurn
+        );
+        return;
+      }
+
       const clickedPiece = board[position.row][position.col];
 
       if (!selectedPosition) {
@@ -160,20 +253,34 @@ export const useShogiGame = () => {
         board
       );
     },
-    [gameState, handleClickWithoutSelection, handleClickWithSelection]
+    [
+      gameState,
+      selectedCapturedPiece,
+      handlePlaceCapturedPiece,
+      handleClickWithoutSelection,
+      handleClickWithSelection,
+    ]
   );
+
+  /**
+   * 持ち駒がクリックされた時の処理
+   */
+  const handleCapturedPieceClick = useCallback((pieceType: PieceType) => {
+    setGameState((prev) => ({
+      ...prev,
+      selectedPosition: null,
+    }));
+    setPossibleMoves([]);
+    setSelectedCapturedPiece(pieceType);
+  }, []);
 
   /**
    * ゲームをリセット
    */
   const resetGame = useCallback(() => {
-    setGameState({
-      board: INITIAL_BOARD,
-      isFirstPlayerTurn: true,
-      selectedPosition: null,
-      gameResult: 'playing_game',
-    });
+    setGameState(INITIAL_GAME_STATE);
     setPossibleMoves([]);
+    setSelectedCapturedPiece(null);
   }, []);
 
   return {
@@ -181,5 +288,7 @@ export const useShogiGame = () => {
     possibleMoves,
     handleSquareClick,
     resetGame,
+    selectedCapturedPiece,
+    handleCapturedPieceClick,
   };
 };
