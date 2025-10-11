@@ -43,10 +43,8 @@ export const useShogiGame = () => {
         selectedPosition: position,
       }));
 
-      setPossibleMoves((prev) => {
-        const moves = getMovablePositions(gameState.board, position, piece);
-        return moves;
-      });
+      const moves = getMovablePositions(gameState.board, position, piece);
+      setPossibleMoves(moves);
     },
     [gameState.board]
   );
