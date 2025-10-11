@@ -3,6 +3,8 @@ import {
   judgeGameResult,
   isValidMoveFromSelectedPosToTargetPos,
   calculateBoardAfterPieceMove,
+  canPlaceCapturedPiece,
+  placeCapturedPiece,
 } from '../utils/gameLogic';
 import type { Board } from '../types/gameState';
 import type { Piece, BoardIndex } from '../types/piece';
@@ -50,7 +52,7 @@ describe('gameLogic', () => {
       const piece: Piece = { type: 'fu', isFirstPlayer: true };
       board[6][4] = piece;
 
-      const newBoard = calculateBoardAfterPieceMove(
+      const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
         board,
         { row: 6 as BoardIndex, col: 4 as BoardIndex },
         { row: 5 as BoardIndex, col: 4 as BoardIndex }
@@ -58,6 +60,7 @@ describe('gameLogic', () => {
 
       expect(newBoard[6][4]).toBeNull();
       expect(newBoard[5][4]).toEqual(piece);
+      expect(capturedPiece).toBeNull();
     });
 
     it('移動先に相手の駒がある場合は取る', () => {
@@ -67,7 +70,7 @@ describe('gameLogic', () => {
       board[6][4] = firstPlayerPiece;
       board[5][4] = secondPlayerPiece;
 
-      const newBoard = calculateBoardAfterPieceMove(
+      const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
         board,
         { row: 6 as BoardIndex, col: 4 as BoardIndex },
         { row: 5 as BoardIndex, col: 4 as BoardIndex }
@@ -75,6 +78,7 @@ describe('gameLogic', () => {
 
       expect(newBoard[6][4]).toBeNull();
       expect(newBoard[5][4]).toEqual(firstPlayerPiece);
+      expect(capturedPiece).toBe('fu');
     });
   });
 
@@ -115,6 +119,72 @@ describe('gameLogic', () => {
       );
 
       expect(isValid).toBe(false);
+    });
+  });
+
+  describe('canPlaceCapturedPiece', () => {
+    it('空いているマスにはtrue', () => {
+      const board = createEmptyBoard();
+
+      const canPlace = canPlaceCapturedPiece(board, {
+        row: 4 as BoardIndex,
+        col: 4 as BoardIndex,
+      });
+
+      expect(canPlace).toBe(true);
+    });
+
+    it('駒があるマスにはfalse', () => {
+      const board = createEmptyBoard();
+      board[4][4] = { type: 'fu', isFirstPlayer: true };
+
+      const canPlace = canPlaceCapturedPiece(board, {
+        row: 4 as BoardIndex,
+        col: 4 as BoardIndex,
+      });
+
+      expect(canPlace).toBe(false);
+    });
+  });
+
+  describe('placeCapturedPiece', () => {
+    it('持ち駒を正しく配置できる', () => {
+      const board = createEmptyBoard();
+
+      const newBoard = placeCapturedPiece(
+        board,
+        { row: 4 as BoardIndex, col: 4 as BoardIndex },
+        'fu',
+        true
+      );
+
+      expect(newBoard[4][4]).toEqual({ type: 'fu', isFirstPlayer: true });
+    });
+
+    it('元の盤面は変更しない', () => {
+      const board = createEmptyBoard();
+
+      placeCapturedPiece(
+        board,
+        { row: 4 as BoardIndex, col: 4 as BoardIndex },
+        'fu',
+        true
+      );
+
+      expect(board[4][4]).toBeNull();
+    });
+
+    it('後手の駒も正しく配置できる', () => {
+      const board = createEmptyBoard();
+
+      const newBoard = placeCapturedPiece(
+        board,
+        { row: 2 as BoardIndex, col: 3 as BoardIndex },
+        'kin',
+        false
+      );
+
+      expect(newBoard[2][3]).toEqual({ type: 'kin', isFirstPlayer: false });
     });
   });
 });
