@@ -1,5 +1,5 @@
 import type { Board } from '../types/gameState';
-import type { Position } from '../types/piece';
+import type { Position, PieceType } from '../types/piece';
 import type { GameResult } from '../types/gameResult';
 import { getMovablePositions } from './moveablePositionsLogic';
 
@@ -33,20 +33,24 @@ export const isValidMoveFromSelectedPosToTargetPos = (
 };
 
 /**
- * 駒を指定位置から指定位置に移動した後の新しい盤面状態を計算
+ * 駒を指定位置から指定位置に移動した後の新しい盤面状態と取った駒を計算
  */
 export const calculateBoardAfterPieceMove = (
   board: Board,
   selectedPos: Position,
   targetPos: Position
-): Board => {
+): { newBoard: Board; capturedPiece: PieceType | null } => {
   const newBoard = board.map((row) => [...row]);
   const piece = newBoard[selectedPos.row][selectedPos.col];
+  const targetPiece = newBoard[targetPos.row][targetPos.col];
+
+  // 取った駒がある場合は記録（成り駒は元に戻す処理は今後実装）
+  const capturedPiece = targetPiece ? targetPiece.type : null;
 
   newBoard[targetPos.row][targetPos.col] = piece;
   newBoard[selectedPos.row][selectedPos.col] = null;
 
-  return newBoard;
+  return { newBoard, capturedPiece };
 };
 
 /**
@@ -94,4 +98,32 @@ export const judgeGameResult = (board: Board): GameResult => {
   }
 
   return 'playing_game';
+};
+
+/**
+ * 持ち駒を盤面に配置できるかを判定
+ */
+export const canPlaceCapturedPiece = (
+  board: Board,
+  targetPos: Position
+): boolean => {
+  // 配置先のマスが空いているかチェック
+  return board[targetPos.row][targetPos.col] === null;
+};
+
+/**
+ * 持ち駒を盤面に配置する
+ */
+export const placeCapturedPiece = (
+  board: Board,
+  targetPos: Position,
+  pieceType: PieceType,
+  isFirstPlayer: boolean
+): Board => {
+  const newBoard = board.map((row) => [...row]);
+  newBoard[targetPos.row][targetPos.col] = {
+    type: pieceType,
+    isFirstPlayer,
+  };
+  return newBoard;
 };
