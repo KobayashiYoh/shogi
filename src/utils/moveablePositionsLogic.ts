@@ -36,13 +36,12 @@ export const getFuReachablePositions = (
     : FU_SECOND_PLAYER_DIRECTION;
   const newRow = selectedRow + direction;
 
-  const position = createPosition(newRow, selectedCol);
-
-  if (position) {
+  try {
+    const position = createPosition(newRow, selectedCol);
     return [position];
+  } catch {
+    return [];
   }
-
-  return [];
 };
 
 /**
@@ -58,9 +57,11 @@ export const getKingReachablePositions = (
     const newRow = selectedRow + deltaRow;
     const newCol = selectedCol + deltaCol;
 
-    const position = createPosition(newRow, newCol);
-    if (position) {
+    try {
+      const position = createPosition(newRow, newCol);
       positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
     }
   }
 
@@ -85,9 +86,11 @@ export const getKinReachablePositions = (
     const newRow = selectedRow + deltaRow;
     const newCol = selectedCol + deltaCol;
 
-    const position = createPosition(newRow, newCol);
-    if (position) {
+    try {
+      const position = createPosition(newRow, newCol);
       positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
     }
   }
 
@@ -112,9 +115,11 @@ export const getGinReachablePositions = (
     const newRow = selectedRow + deltaRow;
     const newCol = selectedCol + deltaCol;
 
-    const position = createPosition(newRow, newCol);
-    if (position) {
+    try {
+      const position = createPosition(newRow, newCol);
       positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
     }
   }
 
@@ -139,9 +144,11 @@ export const getKeimaReachablePositions = (
     const newRow = selectedRow + deltaRow;
     const newCol = selectedCol + deltaCol;
 
-    const position = createPosition(newRow, newCol);
-    if (position) {
+    try {
+      const position = createPosition(newRow, newCol);
       positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
     }
   }
 
@@ -165,19 +172,19 @@ export const getKyouReachablePositions = (
   let currentRow = selectedRow + direction;
 
   while (currentRow >= 0 && currentRow <= 8) {
-    const position = createPosition(currentRow, selectedCol);
-    if (!position) {
+    try {
+      const position = createPosition(currentRow, selectedCol);
+      positions.push(position);
+
+      const hasPieceAtPosition = board[currentRow][selectedCol] !== null;
+      if (hasPieceAtPosition) {
+        break;
+      }
+
+      currentRow += direction;
+    } catch {
       break;
     }
-
-    positions.push(position);
-
-    const hasPieceAtPosition = board[currentRow][selectedCol] !== null;
-    if (hasPieceAtPosition) {
-      break;
-    }
-
-    currentRow += direction;
   }
 
   return positions;
@@ -198,20 +205,20 @@ export const getHishaReachablePositions = (
     let currentCol = selectedCol + deltaCol;
 
     while (isWithinBoard(currentRow, currentCol)) {
-      const position = createPosition(currentRow, currentCol);
-      if (!position) {
+      try {
+        const position = createPosition(currentRow, currentCol);
+        positions.push(position);
+
+        const hasPieceAtPosition = board[currentRow][currentCol] !== null;
+        if (hasPieceAtPosition) {
+          break;
+        }
+
+        currentRow += deltaRow;
+        currentCol += deltaCol;
+      } catch {
         break;
       }
-
-      positions.push(position);
-
-      const hasPieceAtPosition = board[currentRow][currentCol] !== null;
-      if (hasPieceAtPosition) {
-        break;
-      }
-
-      currentRow += deltaRow;
-      currentCol += deltaCol;
     }
   }
 
@@ -233,20 +240,20 @@ export const getKakuReachablePositions = (
     let currentCol = selectedCol + deltaCol;
 
     while (isWithinBoard(currentRow, currentCol)) {
-      const position = createPosition(currentRow, currentCol);
-      if (!position) {
+      try {
+        const position = createPosition(currentRow, currentCol);
+        positions.push(position);
+
+        const hasPieceAtPosition = board[currentRow][currentCol] !== null;
+        if (hasPieceAtPosition) {
+          break;
+        }
+
+        currentRow += deltaRow;
+        currentCol += deltaCol;
+      } catch {
         break;
       }
-
-      positions.push(position);
-
-      const hasPieceAtPosition = board[currentRow][currentCol] !== null;
-      if (hasPieceAtPosition) {
-        break;
-      }
-
-      currentRow += deltaRow;
-      currentCol += deltaCol;
     }
   }
 
