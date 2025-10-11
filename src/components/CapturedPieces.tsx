@@ -49,7 +49,9 @@ export const CapturedPieces = ({
               onClick={() => isMyTurn && onPieceClick(pieceType)}
               disabled={!isMyTurn}
             >
-              <span className="piece-name">{getPieceDisplayText(pieceType)}</span>
+              <span className="piece-name">
+                {getPieceDisplayText(pieceType)}
+              </span>
               {pieceCounts[pieceType] > 1 && (
                 <span className="piece-count">×{pieceCounts[pieceType]}</span>
               )}

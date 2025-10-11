@@ -27,7 +27,6 @@ const INITIAL_GAME_STATE: GameState = {
   capturedPiecesBySecondPlayer: [],
 };
 
-
 /**
  * 将棋ゲームの状態管理を行うカスタムフック
  */
