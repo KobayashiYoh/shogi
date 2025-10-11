@@ -48,7 +48,10 @@ const ShogiBoard: React.FC<ShogiBoardProps> = ({
               <Square
                 key={`${rowIndex}-${colIndex}`}
                 piece={piece}
-                position={{ row: rowIndex as BoardIndex, col: colIndex as BoardIndex }}
+                position={{
+                  row: rowIndex as BoardIndex,
+                  col: colIndex as BoardIndex,
+                }}
                 isSelected={isSelected(rowIndex, colIndex)}
                 isPossibleMove={isPossibleMove(rowIndex, colIndex)}
                 onSquareClick={onSquareClick}
