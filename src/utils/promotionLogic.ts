@@ -120,3 +120,74 @@ export const isAutomaticPromotion = (
   }
   return isAutomaticPromotionForSecondPlayer(toPos, pieceType);
 };
+
+/**
+ * 成り駒の種類の配列
+ */
+const PROMOTED_PIECE_TYPES: PieceType[] = [
+  'ryuou',
+  'ryuuma',
+  'narigin',
+  'narikei',
+  'narikyo',
+  'tokin',
+];
+
+/**
+ * 駒が成り駒かどうかを判定する
+ * @param type 駒の種類
+ * @returns 成り駒の場合true
+ */
+export const isPromotedPiece = (type: PieceType): boolean => {
+  return PROMOTED_PIECE_TYPES.includes(type);
+};
+
+/**
+ * 元の駒から成り駒の種類を取得する
+ * @param originalType 元の駒の種類
+ * @returns 成り駒の種類（成れない駒の場合null）
+ */
+export const getPromotedPieceTypeFromOriginalPieceType = (
+  originalType: PieceType
+): PieceType | null => {
+  switch (originalType) {
+    case 'hisha':
+      return 'ryuou';
+    case 'kaku':
+      return 'ryuuma';
+    case 'gin':
+      return 'narigin';
+    case 'keima':
+      return 'narikei';
+    case 'kyou':
+      return 'narikyo';
+    case 'fu':
+      return 'tokin';
+    default:
+      return null;
+  }
+};
+
+/**
+ * 成り駒から元の駒の種類を取得する
+ * @param promotedType 成り駒の種類
+ * @returns 元の駒の種類
+ */
+export const getOriginalPieceTypeFromPromotedPieceType = (promotedType: PieceType): PieceType => {
+  switch (promotedType) {
+    case 'ryuou':
+      return 'hisha';
+    case 'ryuuma':
+      return 'kaku';
+    case 'narigin':
+      return 'gin';
+    case 'narikei':
+      return 'keima';
+    case 'narikyo':
+      return 'kyou';
+    case 'tokin':
+      return 'fu';
+    default:
+      return promotedType;
+  }
+};
