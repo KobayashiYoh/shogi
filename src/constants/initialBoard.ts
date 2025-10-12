@@ -1,4 +1,4 @@
-import type { Board } from '../types/gameState';
+import type { Board } from '../types/board';
 
 /**
  * 将棋の初期盤面配置（ベタ書きで分かりやすく）

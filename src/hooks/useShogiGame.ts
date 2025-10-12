@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import type { GameState } from '../types/gameState';
-import type { Position, Piece, PieceType } from '../types/piece';
+import type { Piece, PieceType } from '../types/piece';
+import type { Position } from '../types/position';
 import { INITIAL_BOARD } from '../constants/initialBoard';
 import { getMovablePositions } from '../utils/moveablePositionsLogic';
 import {
@@ -14,6 +14,36 @@ import {
   addCapturedPiece,
   removeCapturedPiece,
 } from '../utils/capturedPiecesLogic';
+import {
+  enablePromotionAfterMove,
+  isAutomaticPromotion as checkMustPromote,
+  isPromotedPiece,
+} from '../utils/promotionLogic';
+import type { Board } from '../types/board';
+import type { GameResult } from '../types/gameResult';
+
+/**
+ * 成り選択の状態
+ */
+export interface PromotionChoice {
+  fromPos: Position;
+  toPos: Position;
+  pieceType: PieceType;
+  mustPromote: boolean;
+}
+
+/**
+ * ゲームの状態
+ */
+export interface GameState {
+  board: Board;
+  isFirstPlayerTurn: boolean;
+  selectedPosition: Position | null;
+  gameResult: GameResult;
+  capturedPiecesByFirstPlayer: PieceType[];
+  capturedPiecesBySecondPlayer: PieceType[];
+  promotionChoice: PromotionChoice | null;
+}
 
 /**
  * ゲームの初期状態
@@ -25,6 +55,7 @@ const INITIAL_GAME_STATE: GameState = {
   gameResult: 'playing_game',
   capturedPiecesByFirstPlayer: [],
   capturedPiecesBySecondPlayer: [],
+  promotionChoice: null,
 };
 
 /**
@@ -64,14 +95,15 @@ export const useShogiGame = () => {
   );
 
   /**
-   * 駒の移動処理
+   * 駒の移動処理（成り判定あり）
    */
   const handlePieceMove = useCallback(
-    (fromPosition: Position, toPosition: Position) => {
+    (fromPosition: Position, toPosition: Position, shouldPromote = false) => {
       const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
         gameState.board,
         fromPosition,
-        toPosition
+        toPosition,
+        shouldPromote
       );
       const gameResult = judgeGameResult(newBoard);
 
@@ -83,6 +115,7 @@ export const useShogiGame = () => {
           gameResult,
           capturedPiecesByFirstPlayer: gameState.capturedPiecesByFirstPlayer,
           capturedPiecesBySecondPlayer: gameState.capturedPiecesBySecondPlayer,
+          promotionChoice: null,
         });
         setPossibleMoves([]);
         return;
@@ -105,6 +138,7 @@ export const useShogiGame = () => {
         gameResult,
         capturedPiecesByFirstPlayer: newCapturedByFirst,
         capturedPiecesBySecondPlayer: newCapturedBySecond,
+        promotionChoice: null,
       });
       setPossibleMoves([]);
     },
@@ -168,6 +202,7 @@ export const useShogiGame = () => {
         gameResult,
         capturedPiecesByFirstPlayer: newCapturedByFirst,
         capturedPiecesBySecondPlayer: newCapturedBySecond,
+        promotionChoice: null,
       });
       setSelectedCapturedPiece(null);
     },
@@ -209,7 +244,53 @@ export const useShogiGame = () => {
       );
 
       if (isMoveValid) {
-        handlePieceMove(selectedPosition, position);
+        const selectedPiece = board[selectedPosition.row][selectedPosition.col];
+        if (!selectedPiece) {
+          return;
+        }
+
+        // 成り駒は成り判定しない
+        if (isPromotedPiece(selectedPiece.type)) {
+          handlePieceMove(selectedPosition, position, false);
+          return;
+        }
+
+        // 成ることができるか判定
+        const canPromote = enablePromotionAfterMove(
+          selectedPosition,
+          position,
+          selectedPiece.type,
+          isFirstPlayerTurn
+        );
+
+        if (!canPromote) {
+          handlePieceMove(selectedPosition, position, false);
+          return;
+        }
+
+        // 必ず成らないといけないか判定
+        const mustPromote = checkMustPromote(
+          position,
+          selectedPiece.type,
+          isFirstPlayerTurn
+        );
+
+        if (mustPromote) {
+          // 必ず成る場合は自動的に成る
+          handlePieceMove(selectedPosition, position, true);
+          return;
+        }
+
+        // 成り選択ダイアログを表示
+        setGameState((prev) => ({
+          ...prev,
+          promotionChoice: {
+            fromPos: selectedPosition,
+            toPos: position,
+            pieceType: selectedPiece.type,
+            mustPromote: false,
+          },
+        }));
       }
     },
     [handleSameSquareClick, handleOwnPieceClick, handlePieceMove]
@@ -274,6 +355,30 @@ export const useShogiGame = () => {
   }, []);
 
   /**
+   * 成りを選択したときの処理
+   */
+  const handlePromote = useCallback(() => {
+    const { promotionChoice } = gameState;
+    if (!promotionChoice) {
+      return;
+    }
+
+    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, true);
+  }, [gameState, handlePieceMove]);
+
+  /**
+   * 成らないを選択したときの処理
+   */
+  const handleDeclinePromotion = useCallback(() => {
+    const { promotionChoice } = gameState;
+    if (!promotionChoice) {
+      return;
+    }
+
+    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, false);
+  }, [gameState, handlePieceMove]);
+
+  /**
    * ゲームをリセット
    */
   const resetGame = useCallback(() => {
@@ -289,5 +394,7 @@ export const useShogiGame = () => {
     resetGame,
     selectedCapturedPiece,
     handleCapturedPieceClick,
+    handlePromote,
+    handleDeclinePromotion,
   };
 };

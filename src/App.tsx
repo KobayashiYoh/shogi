@@ -1,6 +1,7 @@
 import ShogiBoard from './components/ShogiBoard';
 import GameInfo from './components/GameInfo';
 import { CapturedPieces } from './components/CapturedPieces';
+import PromotionDialog from './components/PromotionDialog';
 import { useShogiGame } from './hooks/useShogiGame';
 import './App.css';
 
@@ -15,6 +16,8 @@ function App() {
     resetGame,
     selectedCapturedPiece,
     handleCapturedPieceClick,
+    handlePromote,
+    handleDeclinePromotion,
   } = useShogiGame();
 
   return (
@@ -46,6 +49,14 @@ function App() {
           onPieceClick={handleCapturedPieceClick}
         />
       </div>
+      {gameState.promotionChoice && (
+        <PromotionDialog
+          pieceType={gameState.promotionChoice.pieceType}
+          onPromote={handlePromote}
+          onDecline={handleDeclinePromotion}
+          mustPromote={gameState.promotionChoice.mustPromote}
+        />
+      )}
     </div>
   );
 }

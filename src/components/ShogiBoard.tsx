@@ -1,7 +1,7 @@
 import React from 'react';
 import Square from './Square';
-import type { Board } from '../types/gameState';
-import type { Position, BoardIndex } from '../types/piece';
+import type { Board } from '../types/board';
+import type { Position, BoardIndex } from '../types/position';
 import './ShogiBoard.css';
 
 interface ShogiBoardProps {
