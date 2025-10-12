@@ -1,6 +1,6 @@
 import React from 'react';
-import type { GameResult } from '../types';
-import { GAME_TEXT } from '../constants/gameText';
+import type { GameResult } from '@shogi/core';
+import { GAME_TEXT } from '@shogi/core';
 import './GameInfo.css';
 
 interface GameInfoProps {

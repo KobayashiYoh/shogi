@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   addCapturedPiece,
   removeCapturedPiece,
-} from '../../utils/capturedPiecesLogic';
-import type { PieceType } from '../../types';
+} from '../src/utils/capturedPiecesLogic';
+import type { PieceType } from '../src/types';
 
 describe('capturedPiecesLogic', () => {
   describe('addCapturedPiece', () => {

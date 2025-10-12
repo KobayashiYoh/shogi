@@ -1,7 +1,7 @@
 import React from 'react';
-import type { PieceType } from '../types';
-import { getPieceDisplayText } from '../utils/pieceDisplay';
-import { getPromotedPieceTypeFromOriginalPieceType } from '../utils/promotionLogic';
+import type { PieceType } from '@shogi/core';
+import { getPieceDisplayText } from '@shogi/core';
+import { getPromotedPieceTypeFromOriginalPieceType } from '@shogi/core';
 import './PromotionDialog.css';
 
 interface PromotionDialogProps {

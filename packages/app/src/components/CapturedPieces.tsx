@@ -1,5 +1,5 @@
-import type { PieceType } from '../types';
-import { getPieceDisplayText } from '../utils/pieceDisplay';
+import type { PieceType } from '@shogi/core';
+import { getPieceDisplayText } from '@shogi/core';
 import './CapturedPieces.css';
 
 interface CapturedPiecesProps {

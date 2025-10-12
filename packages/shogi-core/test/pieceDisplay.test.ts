@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getPieceDisplayText } from '../../utils/pieceDisplay';
-import type { PieceType } from '../../types';
+import { getPieceDisplayText } from '../src/utils/pieceDisplay';
+import type { PieceType } from '../src/types';
 
 describe('pieceDisplay', () => {
   describe('getPieceDisplayText', () => {

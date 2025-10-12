@@ -1,23 +1,23 @@
 import { useState, useCallback } from 'react';
-import type { Piece, PieceType, Position, Board, GameResult } from '../types';
-import { INITIAL_BOARD } from '../constants/initialBoard';
-import { getMovablePositions } from '../utils/moveablePositionsLogic';
+import type { Piece, PieceType, Position, Board, GameResult } from '@shogi/core';
+import { INITIAL_BOARD } from '@shogi/core';
+import { getMovablePositions } from '@shogi/core';
 import {
   isValidMoveFromSelectedPosToTargetPos,
   calculateBoardAfterPieceMove,
   judgeGameResult,
   canPlaceCapturedPiece,
   placeCapturedPiece,
-} from '../utils/gameLogic';
+} from '@shogi/core';
 import {
   addCapturedPiece,
   removeCapturedPiece,
-} from '../utils/capturedPiecesLogic';
+} from '@shogi/core';
 import {
   enablePromotionAfterMove,
   isAutomaticPromotion as checkMustPromote,
   isPromotedPiece,
-} from '../utils/promotionLogic';
+} from '@shogi/core';
 
 /**
  * 成り選択の状態

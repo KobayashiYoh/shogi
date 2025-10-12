@@ -5,8 +5,8 @@ import {
   calculateBoardAfterPieceMove,
   canPlaceCapturedPiece,
   placeCapturedPiece,
-} from '../../utils/gameLogic';
-import type { Board, Piece, BoardIndex } from '../../types';
+} from '../src/utils/gameLogic';
+import type { Board, Piece, BoardIndex } from '../src/types';
 
 describe('gameLogic', () => {
   const createEmptyBoard = (): Board => {

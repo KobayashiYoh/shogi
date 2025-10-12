@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Position, Piece } from '../types';
-import { getPieceDisplayText } from '../utils/pieceDisplay';
+import type { Position, Piece } from '@shogi/core';
+import { getPieceDisplayText } from '@shogi/core';
 import './Square.css';
 
 interface SquareProps {
