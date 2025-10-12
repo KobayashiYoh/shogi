@@ -1,0 +1,90 @@
+.game-info {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+  min-width: 250px;
+}
+
+.game-info h1 {
+  text-align: center;
+  color: #8b4513;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.game-status h2,
+.game-over h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.current-player {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.current-player.first-player {
+  background-color: #e8f5e8;
+  color: #2d5a2d;
+}
+
+.current-player.second-player {
+  background-color: #ffe8e8;
+  color: #a52a2a;
+}
+
+.game-over {
+  text-align: center;
+}
+
+.winner {
+  font-size: 24px;
+  font-weight: bold;
+  color: #d4a853;
+  margin: 15px 0;
+}
+
+.reset-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reset-button:hover {
+  background-color: #0056b3;
+}
+
+.game-rules {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.game-rules h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.game-rules ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  color: #666;
+}
+
+.game-rules li {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
