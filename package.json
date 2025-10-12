@@ -3,45 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext ts,tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "preview": "vite preview",
-    "test": "vitest",
-    "test:run": "vitest run"
-  },
-  "dependencies": {
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.36.0",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "@typescript-eslint/eslint-plugin": "^8.45.0",
-    "@typescript-eslint/parser": "^8.45.0",
-    "@vitejs/plugin-react": "^5.0.4",
-    "eslint": "^9.37.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.22",
-    "globals": "^16.4.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "prettier": "^3.6.2",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.45.0",
-    "vite": "^7.1.7",
-    "vitest": "^3.2.4"
+    "dev": "npm run dev -w @shogi/app",
+    "build": "npm run build -w @shogi/core && npm run build -w @shogi/app",
+    "type-check": "npm run type-check -w @shogi/core && npm run type-check -w @shogi/app",
+    "preview": "npm run preview -w @shogi/app",
+    "test": "npm run test --workspaces",
+    "test:run": "npm run test:run --workspaces"
   }
 }
