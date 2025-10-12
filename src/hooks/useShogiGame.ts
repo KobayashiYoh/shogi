@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import type { GameState } from '../types/gameState';
 import type { Piece, PieceType } from '../types/piece';
 import type { Position } from '../types/position';
 import { INITIAL_BOARD } from '../constants/initialBoard';
