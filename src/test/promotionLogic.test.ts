@@ -468,7 +468,9 @@ describe('promotionLogic', () => {
     });
 
     it('桂は成桂に成る', () => {
-      expect(getPromotedPieceTypeFromOriginalPieceType('keima')).toBe('narikei');
+      expect(getPromotedPieceTypeFromOriginalPieceType('keima')).toBe(
+        'narikei'
+      );
     });
 
     it('香は成香に成る', () => {
@@ -502,7 +504,9 @@ describe('promotionLogic', () => {
     });
 
     it('成桂は桂に戻る', () => {
-      expect(getOriginalPieceTypeFromPromotedPieceType('narikei')).toBe('keima');
+      expect(getOriginalPieceTypeFromPromotedPieceType('narikei')).toBe(
+        'keima'
+      );
     });
 
     it('成香は香に戻る', () => {

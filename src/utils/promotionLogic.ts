@@ -173,7 +173,9 @@ export const getPromotedPieceTypeFromOriginalPieceType = (
  * @param promotedType 成り駒の種類
  * @returns 元の駒の種類
  */
-export const getOriginalPieceTypeFromPromotedPieceType = (promotedType: PieceType): PieceType => {
+export const getOriginalPieceTypeFromPromotedPieceType = (
+  promotedType: PieceType
+): PieceType => {
   switch (promotedType) {
     case 'ryuou':
       return 'hisha';

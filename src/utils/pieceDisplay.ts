@@ -16,5 +16,5 @@ export const getPieceDisplayText = (pieceType: PieceType): string => {
  * @returns 表示用の文字
  */
 export const getPieceDisplayTextFromPiece = (piece: Piece): string => {
-return getPieceDisplayText(piece.type);
+  return getPieceDisplayText(piece.type);
 };
