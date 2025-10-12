@@ -2,14 +2,20 @@
  * 駒の種類を表す型
  */
 export type PieceType =
-  | 'ou'
-  | 'hisha'
-  | 'kaku'
-  | 'kin'
-  | 'gin'
-  | 'keima'
-  | 'kyou'
-  | 'fu';
+  | 'ou' // 王
+  | 'hisha' // 飛車
+  | 'kaku' // 角
+  | 'kin' // 金
+  | 'gin' // 銀
+  | 'keima' // 桂馬
+  | 'kyou' // 香車
+  | 'fu' // 歩
+  | 'ryuou' // 竜王（成り飛車）
+  | 'ryuuma' // 竜馬（成り角）
+  | 'narigin' // 成銀
+  | 'narikei' // 成桂
+  | 'narikyo' // 成香
+  | 'tokin'; // と金（成り歩）
 
 /**
  * 駒の情報
@@ -17,17 +23,4 @@ export type PieceType =
 export interface Piece {
   type: PieceType;
   isFirstPlayer: boolean;
-}
-
-/**
- * 将棋盤の有効な座標値（0-8）
- */
-export type BoardIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
-/**
- * 盤面の位置（0-8の座標）
- */
-export interface Position {
-  row: BoardIndex;
-  col: BoardIndex;
 }
