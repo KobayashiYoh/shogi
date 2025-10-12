@@ -1,7 +1,6 @@
 import React from 'react';
-import type { Position } from '../types/position';
-import type { Piece } from '../types/piece';
-import { getPieceDisplayTextFromPiece } from '../utils/pieceDisplay';
+import type { Position, Piece } from '../types';
+import { getPieceDisplayText } from '../utils/pieceDisplay';
 import './Square.css';
 
 interface SquareProps {
@@ -46,7 +45,7 @@ const Square: React.FC<SquareProps> = ({
         <div
           className={`piece ${piece.isFirstPlayer ? 'first-player' : 'second-player'}`}
         >
-          {getPieceDisplayTextFromPiece(piece)}
+          {getPieceDisplayText(piece.type)}
         </div>
       )}
     </div>

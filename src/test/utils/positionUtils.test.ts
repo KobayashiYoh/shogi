@@ -3,7 +3,7 @@ import {
   isValidPosition,
   createPosition,
   InvalidPositionError,
-} from '../utils/createPosition';
+} from '../../utils/createPosition';
 
 describe('positionUtils', () => {
   describe('isValidPosition', () => {

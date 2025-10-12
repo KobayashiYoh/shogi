@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Piece, PieceType } from '../types/piece';
-import type { Position } from '../types/position';
+import type { Piece, PieceType, Position, Board, GameResult } from '../types';
 import { INITIAL_BOARD } from '../constants/initialBoard';
 import { getMovablePositions } from '../utils/moveablePositionsLogic';
 import {
@@ -19,8 +18,6 @@ import {
   isAutomaticPromotion as checkMustPromote,
   isPromotedPiece,
 } from '../utils/promotionLogic';
-import type { Board } from '../types/board';
-import type { GameResult } from '../types/gameResult';
 
 /**
  * 成り選択の状態

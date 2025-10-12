@@ -1,4 +1,4 @@
-import type { Board } from '../types/board';
+import type { Board } from '../types';
 
 /**
  * 将棋の初期盤面配置（ベタ書きで分かりやすく）

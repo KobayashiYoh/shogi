@@ -1,7 +1,4 @@
-import type { Board } from '../types/board';
-import type { PieceType } from '../types/piece';
-import type { Position } from '../types/position';
-import type { GameResult } from '../types/gameResult';
+import type { Board, PieceType, Position, GameResult } from '../types';
 import { getMovablePositions } from './moveablePositionsLogic';
 
 /**
