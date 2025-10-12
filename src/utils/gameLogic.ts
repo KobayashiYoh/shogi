@@ -39,7 +39,8 @@ export const isValidMoveFromSelectedPosToTargetPos = (
 export const calculateBoardAfterPieceMove = (
   board: Board,
   selectedPos: Position,
-  targetPos: Position
+  targetPos: Position,
+  shouldPromote = false
 ): { newBoard: Board; capturedPiece: PieceType | null } => {
   const newBoard = board.map((row) => [...row]);
   const piece = newBoard[selectedPos.row][selectedPos.col];
@@ -48,7 +49,34 @@ export const calculateBoardAfterPieceMove = (
   // 取った駒がある場合は記録（成り駒は元に戻す処理は今後実装）
   const capturedPiece = targetPiece ? targetPiece.type : null;
 
-  newBoard[targetPos.row][targetPos.col] = piece;
+  // 成り処理
+  if (shouldPromote && piece) {
+    const promotedPiece = { ...piece };
+    switch (piece.type) {
+      case 'hisha':
+        promotedPiece.type = 'ryuou';
+        break;
+      case 'kaku':
+        promotedPiece.type = 'ryuuma';
+        break;
+      case 'gin':
+        promotedPiece.type = 'narigin';
+        break;
+      case 'keima':
+        promotedPiece.type = 'narikei';
+        break;
+      case 'kyou':
+        promotedPiece.type = 'narikyo';
+        break;
+      case 'fu':
+        promotedPiece.type = 'tokin';
+        break;
+    }
+    newBoard[targetPos.row][targetPos.col] = promotedPiece;
+  } else {
+    newBoard[targetPos.row][targetPos.col] = piece;
+  }
+
   newBoard[selectedPos.row][selectedPos.col] = null;
 
   return { newBoard, capturedPiece };
