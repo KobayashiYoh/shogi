@@ -1,11 +1,5 @@
 import { useState, useCallback } from 'react';
-import type {
-  Piece,
-  PieceType,
-  Position,
-  Board,
-  GameResult,
-} from '../types';
+import type { Piece, PieceType, Position, Board, GameResult } from '../types';
 import { INITIAL_BOARD } from '../constants/initialBoard';
 import { getMovablePositions } from '../utils/moveablePositionsLogic';
 import {
