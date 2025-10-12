@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getMovablePositions } from '../utils/moveablePositionsLogic';
-import type { Board, Piece, BoardIndex } from '../types';
+import { getMovablePositions } from '../../utils/moveablePositionsLogic';
+import type { Board, Piece, BoardIndex } from '../../types';
 
 describe('moveablePositionsLogic', () => {
   const createEmptyBoard = (): Board => {
