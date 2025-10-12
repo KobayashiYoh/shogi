@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PieceType } from '../types/piece';
+import type { PieceType } from '../types';
 import { getPieceDisplayText } from '../utils/pieceDisplay';
 import { getPromotedPieceTypeFromOriginalPieceType } from '../utils/promotionLogic';
 import './PromotionDialog.css';

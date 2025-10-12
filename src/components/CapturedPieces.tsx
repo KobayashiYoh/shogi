@@ -1,4 +1,4 @@
-import type { PieceType } from '../types/piece';
+import type { PieceType } from '../types';
 import { getPieceDisplayText } from '../utils/pieceDisplay';
 import './CapturedPieces.css';
 

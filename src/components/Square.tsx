@@ -1,6 +1,5 @@
 import React from 'react';
-import type { Position } from '../types/position';
-import type { Piece } from '../types/piece';
+import type { Position, Piece } from '../types';
 import { getPieceDisplayTextFromPiece } from '../utils/pieceDisplay';
 import './Square.css';
 

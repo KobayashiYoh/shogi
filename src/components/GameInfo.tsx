@@ -1,5 +1,5 @@
 import React from 'react';
-import type { GameResult } from '../types/gameResult';
+import type { GameResult } from '../types';
 import { GAME_TEXT } from '../constants/gameText';
 import './GameInfo.css';
 
