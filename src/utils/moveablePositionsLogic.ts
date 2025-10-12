@@ -1,5 +1,6 @@
-import type { Board } from '../types/gameState';
-import type { Piece, Position } from '../types/piece';
+import type { Board } from '../types/board';
+import type { Piece } from '../types/piece';
+import type { Position } from '../types/position';
 import { createPosition } from './createPosition';
 import {
   FU_FIRST_PLAYER_DIRECTION,
@@ -261,6 +262,80 @@ export const getKakuReachablePositions = (
 };
 
 /**
+ * 竜王（成飛車）の到達可能位置を取得
+ */
+export const getPromotedHishaReachablePositions = (
+  board: Board,
+  selectedPos: Position
+): Position[] => {
+  const { row: selectedRow, col: selectedCol } = selectedPos;
+  const positions: Position[] = [];
+
+  // 飛車の動き（縦横）
+  const hishaPositions = getHishaReachablePositions(board, selectedPos);
+  positions.push(...hishaPositions);
+
+  // 斜め4方向に1マス
+  const diagonalDirections: [number, number][] = [
+    [-1, -1],
+    [-1, 1],
+    [1, -1],
+    [1, 1],
+  ];
+
+  for (const [deltaRow, deltaCol] of diagonalDirections) {
+    const newRow = selectedRow + deltaRow;
+    const newCol = selectedCol + deltaCol;
+
+    try {
+      const position = createPosition(newRow, newCol);
+      positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
+    }
+  }
+
+  return positions;
+};
+
+/**
+ * 竜馬（成角）の到達可能位置を取得
+ */
+export const getPromotedKakuReachablePositions = (
+  board: Board,
+  selectedPos: Position
+): Position[] => {
+  const { row: selectedRow, col: selectedCol } = selectedPos;
+  const positions: Position[] = [];
+
+  // 角の動き（斜め）
+  const kakuPositions = getKakuReachablePositions(board, selectedPos);
+  positions.push(...kakuPositions);
+
+  // 上下左右4方向に1マス
+  const straightDirections: [number, number][] = [
+    [-1, 0],
+    [1, 0],
+    [0, -1],
+    [0, 1],
+  ];
+
+  for (const [deltaRow, deltaCol] of straightDirections) {
+    const newRow = selectedRow + deltaRow;
+    const newCol = selectedCol + deltaCol;
+
+    try {
+      const position = createPosition(newRow, newCol);
+      positions.push(position);
+    } catch {
+      // 盤面外の場合はスキップ
+    }
+  }
+
+  return positions;
+};
+
+/**
  * 駒の移動可能位置を取得
  */
 const getReachablePositions = (
@@ -271,6 +346,7 @@ const getReachablePositions = (
   const { type, isFirstPlayer } = piece;
   let positions: Position[] = [];
 
+  // 駒の種類に応じて到達可能位置を取得
   switch (type) {
     case 'fu': {
       positions = getFuReachablePositions(board, selectedPos, isFirstPlayer);
@@ -302,6 +378,22 @@ const getReachablePositions = (
     }
     case 'kaku': {
       positions = getKakuReachablePositions(board, selectedPos);
+      break;
+    }
+    case 'ryuou': {
+      positions = getPromotedHishaReachablePositions(board, selectedPos);
+      break;
+    }
+    case 'ryuuma': {
+      positions = getPromotedKakuReachablePositions(board, selectedPos);
+      break;
+    }
+    case 'tokin':
+    case 'narigin':
+    case 'narikei':
+    case 'narikyo': {
+      // と金、成銀、成桂、成香は金と同じ動き
+      positions = getKinReachablePositions(selectedPos, isFirstPlayer);
       break;
     }
   }
