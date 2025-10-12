@@ -6,8 +6,9 @@ import {
   canPlaceCapturedPiece,
   placeCapturedPiece,
 } from '../utils/gameLogic';
-import type { Board } from '../types/gameState';
-import type { Piece, BoardIndex } from '../types/piece';
+import type { Board } from '../types/board';
+import type { Piece } from '../types/piece';
+import type { BoardIndex } from '../types/position';
 
 describe('gameLogic', () => {
   const createEmptyBoard = (): Board => {
@@ -49,7 +50,10 @@ describe('gameLogic', () => {
   describe('calculateBoardAfterPieceMove', () => {
     it('駒が正しく移動する', () => {
       const board = createEmptyBoard();
-      const piece: Piece = { type: 'fu', isFirstPlayer: true };
+      const piece: Piece = {
+        type: 'fu',
+        isFirstPlayer: true,
+      };
       board[6][4] = piece;
 
       const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
@@ -65,8 +69,14 @@ describe('gameLogic', () => {
 
     it('移動先に相手の駒がある場合は取る', () => {
       const board = createEmptyBoard();
-      const firstPlayerPiece: Piece = { type: 'fu', isFirstPlayer: true };
-      const secondPlayerPiece: Piece = { type: 'fu', isFirstPlayer: false };
+      const firstPlayerPiece: Piece = {
+        type: 'fu',
+        isFirstPlayer: true,
+      };
+      const secondPlayerPiece: Piece = {
+        type: 'fu',
+        isFirstPlayer: false,
+      };
       board[6][4] = firstPlayerPiece;
       board[5][4] = secondPlayerPiece;
 
@@ -158,7 +168,10 @@ describe('gameLogic', () => {
         true
       );
 
-      expect(newBoard[4][4]).toEqual({ type: 'fu', isFirstPlayer: true });
+      expect(newBoard[4][4]).toEqual({
+        type: 'fu',
+        isFirstPlayer: true,
+      });
     });
 
     it('元の盤面は変更しない', () => {
@@ -184,7 +197,10 @@ describe('gameLogic', () => {
         false
       );
 
-      expect(newBoard[2][3]).toEqual({ type: 'kin', isFirstPlayer: false });
+      expect(newBoard[2][3]).toEqual({
+        type: 'kin',
+        isFirstPlayer: false,
+      });
     });
   });
 });

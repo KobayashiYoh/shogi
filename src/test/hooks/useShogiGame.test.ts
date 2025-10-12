@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useShogiGame } from '../../hooks/useShogiGame';
 import { INITIAL_BOARD } from '../../constants/initialBoard';
-import type { BoardIndex } from '../../types/piece';
+import type { BoardIndex } from '../../types/position';
 
 describe('useShogiGame', () => {
   describe('初期状態', () => {
