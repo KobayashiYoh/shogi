@@ -3,6 +3,9 @@ import {
   enablePromotionPieceType,
   enablePromotionAfterMove,
   isAutomaticPromotion,
+  isPromotedPiece,
+  getPromotedPieceTypeFromOriginalPieceType,
+  getOriginalPieceTypeFromPromotedPieceType,
 } from '../utils/promotionLogic';
 import type { BoardIndex } from '../types/position';
 
@@ -41,7 +44,7 @@ describe('promotionLogic', () => {
     });
 
     it('成り駒（竜王）は成れる', () => {
-      expect(enablePromotionPieceType('ryuuou')).toBe(true);
+      expect(enablePromotionPieceType('ryuou')).toBe(true);
     });
 
     it('成り駒（竜馬）は成れる', () => {
@@ -130,7 +133,7 @@ describe('promotionLogic', () => {
       const result = enablePromotionAfterMove(
         { row: 1 as BoardIndex, col: 4 as BoardIndex },
         { row: 0 as BoardIndex, col: 4 as BoardIndex },
-        'ryuuou',
+        'ryuou',
         true
       );
       expect(result).toBe(true);
@@ -296,7 +299,7 @@ describe('promotionLogic', () => {
     it('先手の成り駒（竜王）が0行目に移動しても自動的に成らない', () => {
       const result = isAutomaticPromotion(
         { row: 0 as BoardIndex, col: 4 as BoardIndex },
-        'ryuuou',
+        'ryuou',
         true
       );
       expect(result).toBe(false);
@@ -410,6 +413,110 @@ describe('promotionLogic', () => {
         false
       );
       expect(result).toBe(false);
+    });
+  });
+
+  describe('isPromotedPiece', () => {
+    it('竜王は成り駒', () => {
+      expect(isPromotedPiece('ryuou')).toBe(true);
+    });
+
+    it('竜馬は成り駒', () => {
+      expect(isPromotedPiece('ryuuma')).toBe(true);
+    });
+
+    it('成銀は成り駒', () => {
+      expect(isPromotedPiece('narigin')).toBe(true);
+    });
+
+    it('成桂は成り駒', () => {
+      expect(isPromotedPiece('narikei')).toBe(true);
+    });
+
+    it('成香は成り駒', () => {
+      expect(isPromotedPiece('narikyo')).toBe(true);
+    });
+
+    it('と金は成り駒', () => {
+      expect(isPromotedPiece('tokin')).toBe(true);
+    });
+
+    it('飛車は成り駒ではない', () => {
+      expect(isPromotedPiece('hisha')).toBe(false);
+    });
+
+    it('角は成り駒ではない', () => {
+      expect(isPromotedPiece('kaku')).toBe(false);
+    });
+
+    it('王は成り駒ではない', () => {
+      expect(isPromotedPiece('ou')).toBe(false);
+    });
+  });
+
+  describe('getPromotedPieceTypeFromOriginalPieceType', () => {
+    it('飛車は竜王に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('hisha')).toBe('ryuou');
+    });
+
+    it('角は竜馬に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('kaku')).toBe('ryuuma');
+    });
+
+    it('銀は成銀に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('gin')).toBe('narigin');
+    });
+
+    it('桂は成桂に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('keima')).toBe('narikei');
+    });
+
+    it('香は成香に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('kyou')).toBe('narikyo');
+    });
+
+    it('歩はと金に成る', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('fu')).toBe('tokin');
+    });
+
+    it('王は成れない（nullを返す）', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('ou')).toBe(null);
+    });
+
+    it('金は成れない（nullを返す）', () => {
+      expect(getPromotedPieceTypeFromOriginalPieceType('kin')).toBe(null);
+    });
+  });
+
+  describe('getOriginalPieceTypeFromPromotedPieceType', () => {
+    it('竜王は飛車に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('ryuou')).toBe('hisha');
+    });
+
+    it('竜馬は角に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('ryuuma')).toBe('kaku');
+    });
+
+    it('成銀は銀に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('narigin')).toBe('gin');
+    });
+
+    it('成桂は桂に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('narikei')).toBe('keima');
+    });
+
+    it('成香は香に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('narikyo')).toBe('kyou');
+    });
+
+    it('と金は歩に戻る', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('tokin')).toBe('fu');
+    });
+
+    it('成り駒でない駒はそのまま返す', () => {
+      expect(getOriginalPieceTypeFromPromotedPieceType('ou')).toBe('ou');
+      expect(getOriginalPieceTypeFromPromotedPieceType('kin')).toBe('kin');
+      expect(getOriginalPieceTypeFromPromotedPieceType('hisha')).toBe('hisha');
     });
   });
 });
