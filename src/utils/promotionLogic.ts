@@ -1,5 +1,4 @@
-import type { Position } from '../types/position';
-import type { PieceType } from '../types/piece';
+import type { Position, PieceType } from '../types';
 
 /**
  * 駒の種類が成ることができるかどうかを判定

@@ -1,6 +1,4 @@
-import type { Board } from '../types/board';
-import type { Piece } from '../types/piece';
-import type { Position } from '../types/position';
+import type { Board, Piece, Position } from '../types';
 import { createPosition } from './createPosition';
 import {
   FU_FIRST_PLAYER_DIRECTION,

@@ -1,4 +1,4 @@
-import type { PieceType } from '../types/piece';
+import type { PieceType } from '../types';
 
 /**
  * 駒の表示用文字マッピング

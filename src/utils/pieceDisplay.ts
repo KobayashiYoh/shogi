@@ -1,4 +1,4 @@
-import type { Piece, PieceType } from '../types/piece';
+import type { Piece, PieceType } from '../types';
 import { PIECE_DISPLAY_MAP } from '../constants/pieceDisplay';
 
 /**

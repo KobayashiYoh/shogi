@@ -1,4 +1,4 @@
-import type { Position, BoardIndex } from '../types/position';
+import type { Position, BoardIndex } from '../types';
 
 /**
  * Positionの値が有効な範囲内かチェック

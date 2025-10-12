@@ -1,4 +1,4 @@
-import type { PieceType } from '../types/piece';
+import type { PieceType } from '../types';
 
 /**
  * 持ち駒リストに駒を追加する
