@@ -3,7 +3,7 @@ import {
   addCapturedPiece,
   removeCapturedPiece,
 } from '../utils/capturedPiecesLogic';
-import type { PieceType } from '../types/piece';
+import type { PieceType } from '../types';
 
 describe('capturedPiecesLogic', () => {
   describe('addCapturedPiece', () => {

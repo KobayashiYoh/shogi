@@ -7,7 +7,7 @@ import {
   getPromotedPieceTypeFromOriginalPieceType,
   getOriginalPieceTypeFromPromotedPieceType,
 } from '../utils/promotionLogic';
-import type { BoardIndex } from '../types/position';
+import type { BoardIndex } from '../types';
 
 describe('promotionLogic', () => {
   describe('canPieceBePromoted', () => {
