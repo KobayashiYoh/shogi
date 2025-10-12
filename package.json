@@ -8,8 +8,10 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @shogi/app",
-    "build": "npm run build -w @shogi/core && npm run build -w @shogi/app",
+    "build": "npm run build --workspaces --if-present",
     "type-check": "npm run type-check -w @shogi/core && npm run type-check -w @shogi/app",
+    "lint": "npm run lint --workspaces --if-present",
+    "format:check": "npm run format:check --workspaces --if-present",
     "preview": "npm run preview -w @shogi/app",
     "test": "npm run test --workspaces",
     "test:run": "npm run test:run --workspaces"
