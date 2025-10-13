@@ -1,23 +1,28 @@
-import { useState, useCallback } from 'react';
-import type { Piece, PieceType, Position, Board, GameResult } from '@shogi/core';
-import { INITIAL_BOARD } from '@shogi/core';
-import { getMovablePositions } from '@shogi/core';
+import { useState, useCallback, useEffect } from "react";
+import type {
+  Piece,
+  PieceType,
+  Position,
+  Board,
+  GameResult,
+  GameMode,
+} from "@shogi/core";
+import { INITIAL_BOARD } from "@shogi/core";
+import { getMovablePositions } from "@shogi/core";
 import {
   isValidMoveFromSelectedPosToTargetPos,
   calculateBoardAfterPieceMove,
   judgeGameResult,
   canPlaceCapturedPiece,
   placeCapturedPiece,
-} from '@shogi/core';
-import {
-  addCapturedPiece,
-  removeCapturedPiece,
-} from '@shogi/core';
+} from "@shogi/core";
+import { addCapturedPiece, removeCapturedPiece } from "@shogi/core";
 import {
   enablePromotionAfterMove,
   isAutomaticPromotion as checkMustPromote,
   isPromotedPiece,
-} from '@shogi/core';
+} from "@shogi/core";
+import { selectCpuMove, shouldCpuPromote } from "@shogi/core";
 
 /**
  * 成り選択の状態
@@ -40,6 +45,7 @@ export interface GameState {
   capturedPiecesByFirstPlayer: PieceType[];
   capturedPiecesBySecondPlayer: PieceType[];
   promotionChoice: PromotionChoice | null;
+  gameMode: GameMode;
 }
 
 /**
@@ -49,10 +55,11 @@ const INITIAL_GAME_STATE: GameState = {
   board: INITIAL_BOARD,
   isFirstPlayerTurn: true,
   selectedPosition: null,
-  gameResult: 'playing_game',
+  gameResult: "playing_game",
   capturedPiecesByFirstPlayer: [],
   capturedPiecesBySecondPlayer: [],
   promotionChoice: null,
+  gameMode: null,
 };
 
 /**
@@ -63,6 +70,17 @@ export const useShogiGame = () => {
   const [possibleMoves, setPossibleMoves] = useState<Position[]>([]);
   const [selectedCapturedPiece, setSelectedCapturedPiece] =
     useState<PieceType | null>(null);
+  const [isCpuThinking, setIsCpuThinking] = useState(false);
+
+  /**
+   * ゲームモードを設定
+   */
+  const setGameMode = useCallback((mode: GameMode) => {
+    setGameState((prev) => ({
+      ...prev,
+      gameMode: mode,
+    }));
+  }, []);
 
   /**
    * 同じマスがクリックされた場合の処理
@@ -113,6 +131,7 @@ export const useShogiGame = () => {
           capturedPiecesByFirstPlayer: gameState.capturedPiecesByFirstPlayer,
           capturedPiecesBySecondPlayer: gameState.capturedPiecesBySecondPlayer,
           promotionChoice: null,
+          gameMode: gameState.gameMode,
         });
         setPossibleMoves([]);
         return;
@@ -136,6 +155,7 @@ export const useShogiGame = () => {
         capturedPiecesByFirstPlayer: newCapturedByFirst,
         capturedPiecesBySecondPlayer: newCapturedBySecond,
         promotionChoice: null,
+        gameMode: gameState.gameMode,
       });
       setPossibleMoves([]);
     },
@@ -144,6 +164,7 @@ export const useShogiGame = () => {
       gameState.isFirstPlayerTurn,
       gameState.capturedPiecesByFirstPlayer,
       gameState.capturedPiecesBySecondPlayer,
+      gameState.gameMode,
     ]
   );
 
@@ -200,6 +221,7 @@ export const useShogiGame = () => {
         capturedPiecesByFirstPlayer: newCapturedByFirst,
         capturedPiecesBySecondPlayer: newCapturedBySecond,
         promotionChoice: null,
+        gameMode: gameState.gameMode,
       });
       setSelectedCapturedPiece(null);
     },
@@ -301,8 +323,13 @@ export const useShogiGame = () => {
       const { board, selectedPosition, isFirstPlayerTurn, gameResult } =
         gameState;
 
-      const isGameOver = gameResult !== 'playing_game';
+      const isGameOver = gameResult !== "playing_game";
       if (isGameOver) {
+        return;
+      }
+
+      // CPUが思考中はクリックを無視
+      if (isCpuThinking) {
         return;
       }
 
@@ -333,6 +360,7 @@ export const useShogiGame = () => {
     [
       gameState,
       selectedCapturedPiece,
+      isCpuThinking,
       handlePlaceCapturedPiece,
       handleClickWithoutSelection,
       handleClickWithSelection,
@@ -343,12 +371,18 @@ export const useShogiGame = () => {
    * 持ち駒がクリックされた時の処理
    */
   const handleCapturedPieceClick = useCallback((pieceType: PieceType) => {
+    setSelectedCapturedPiece((prev) => {
+      // 同じ持ち駒がクリックされた場合は選択を解除
+      if (prev === pieceType) {
+        return null;
+      }
+      return pieceType;
+    });
     setGameState((prev) => ({
       ...prev,
       selectedPosition: null,
     }));
     setPossibleMoves([]);
-    setSelectedCapturedPiece(pieceType);
   }, []);
 
   /**
@@ -382,7 +416,85 @@ export const useShogiGame = () => {
     setGameState(INITIAL_GAME_STATE);
     setPossibleMoves([]);
     setSelectedCapturedPiece(null);
+    setIsCpuThinking(false);
   }, []);
+
+  /**
+   * CPUの手を実行
+   */
+  const executeCpuMove = useCallback(() => {
+    console.log('executeCpuMove called');
+    console.log('board:', gameState.board);
+    console.log('capturedPieces:', gameState.capturedPiecesBySecondPlayer);
+
+    const cpuMove = selectCpuMove(gameState.board, gameState.capturedPiecesBySecondPlayer);
+    console.log('cpuMove:', cpuMove);
+
+    if (!cpuMove) {
+      console.log('No valid CPU move found');
+      setIsCpuThinking(false);
+      return;
+    }
+
+    const { fromPos, toPos, capturedPieceType } = cpuMove;
+
+    // 持ち駒を使う場合
+    if (fromPos === null && capturedPieceType) {
+      console.log('Placing captured piece:', capturedPieceType, 'at', toPos);
+      handlePlaceCapturedPiece(toPos, capturedPieceType, false);
+      setIsCpuThinking(false);
+      return;
+    }
+
+    // 盤上の駒を動かす場合
+    if (fromPos === null) {
+      console.log('fromPos is null but no capturedPieceType');
+      setIsCpuThinking(false);
+      return;
+    }
+
+    const piece = gameState.board[fromPos.row][fromPos.col];
+    if (!piece) {
+      console.log('No piece at fromPos:', fromPos);
+      setIsCpuThinking(false);
+      return;
+    }
+
+    // 成り判定
+    const shouldPromote = shouldCpuPromote(fromPos, toPos, piece.type, false);
+    console.log('Moving piece from', fromPos, 'to', toPos, 'shouldPromote:', shouldPromote);
+
+    handlePieceMove(fromPos, toPos, shouldPromote);
+    setIsCpuThinking(false);
+  }, [gameState.board, gameState.capturedPiecesBySecondPlayer, handlePieceMove, handlePlaceCapturedPiece]);
+
+  /**
+   * CPUのターンを監視して自動で手を指す
+   */
+  useEffect(() => {
+    const isCpuTurn =
+      gameState.gameMode === "cpu" &&
+      !gameState.isFirstPlayerTurn &&
+      gameState.gameResult === "playing_game" &&
+      !gameState.promotionChoice;
+
+    if (isCpuTurn && !isCpuThinking) {
+      setIsCpuThinking(true);
+      const timer = setTimeout(() => {
+        executeCpuMove();
+      }, 500);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [
+    gameState.gameMode,
+    gameState.isFirstPlayerTurn,
+    gameState.gameResult,
+    gameState.promotionChoice,
+    executeCpuMove,
+  ]);
 
   return {
     gameState,
@@ -393,5 +505,6 @@ export const useShogiGame = () => {
     handleCapturedPieceClick,
     handlePromote,
     handleDeclinePromotion,
+    setGameMode,
   };
 };
