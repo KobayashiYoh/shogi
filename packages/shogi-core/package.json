@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./constants": "./src/constants/index.ts",
     "./types": "./src/types/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utils": "./src/utils/index.ts",
+    "./test/fixtures/gameScenarios": "./test/fixtures/gameScenarios.ts"
   },
   "scripts": {
     "test": "vitest",
