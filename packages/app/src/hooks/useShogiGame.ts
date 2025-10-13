@@ -7,22 +7,22 @@ import type {
   GameResult,
   GameMode,
 } from "@shogi/core";
-import { INITIAL_BOARD } from "@shogi/core";
-import { getMovablePositions } from "@shogi/core";
 import {
+  INITIAL_BOARD,
+  getMovablePositions,
   isValidMoveFromSelectedPosToTargetPos,
   calculateBoardAfterPieceMove,
   judgeGameResult,
   canPlaceCapturedPiece,
   placeCapturedPiece,
-} from "@shogi/core";
-import { addCapturedPiece, removeCapturedPiece } from "@shogi/core";
-import {
+  addCapturedPiece,
+  removeCapturedPiece,
   enablePromotionAfterMove,
   isAutomaticPromotion as checkMustPromote,
   isPromotedPiece,
+  selectCpuMove,
+  shouldCpuPromote,
 } from "@shogi/core";
-import { selectCpuMove, shouldCpuPromote } from "@shogi/core";
 
 /**
  * 成り選択の状態
@@ -76,338 +76,8 @@ export const useShogiGame = () => {
    * ゲームモードを設定
    */
   const setGameMode = useCallback((mode: GameMode) => {
-    setGameState((prev) => ({
-      ...prev,
-      gameMode: mode,
-    }));
+    setGameState((prev) => ({ ...prev, gameMode: mode }));
   }, []);
-
-  /**
-   * 同じマスがクリックされた場合の処理
-   */
-  const handleSameSquareClick = useCallback(() => {
-    setGameState((prev) => ({
-      ...prev,
-      selectedPosition: null,
-    }));
-    setPossibleMoves([]);
-  }, []);
-
-  /**
-   * 自分の駒がクリックされた場合の処理
-   */
-  const handleOwnPieceClick = useCallback(
-    (position: Position, piece: Piece) => {
-      setGameState((prev) => ({
-        ...prev,
-        selectedPosition: position,
-      }));
-
-      const moves = getMovablePositions(gameState.board, position, piece);
-      setPossibleMoves(moves);
-    },
-    [gameState.board]
-  );
-
-  /**
-   * 駒の移動処理（成り判定あり）
-   */
-  const handlePieceMove = useCallback(
-    (fromPosition: Position, toPosition: Position, shouldPromote = false) => {
-      const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
-        gameState.board,
-        fromPosition,
-        toPosition,
-        shouldPromote
-      );
-      const gameResult = judgeGameResult(newBoard);
-
-      if (!capturedPiece) {
-        setGameState({
-          board: newBoard,
-          isFirstPlayerTurn: !gameState.isFirstPlayerTurn,
-          selectedPosition: null,
-          gameResult,
-          capturedPiecesByFirstPlayer: gameState.capturedPiecesByFirstPlayer,
-          capturedPiecesBySecondPlayer: gameState.capturedPiecesBySecondPlayer,
-          promotionChoice: null,
-          gameMode: gameState.gameMode,
-        });
-        setPossibleMoves([]);
-        return;
-      }
-
-      const newCapturedByFirst = gameState.isFirstPlayerTurn
-        ? addCapturedPiece(gameState.capturedPiecesByFirstPlayer, capturedPiece)
-        : gameState.capturedPiecesByFirstPlayer;
-      const newCapturedBySecond = !gameState.isFirstPlayerTurn
-        ? addCapturedPiece(
-            gameState.capturedPiecesBySecondPlayer,
-            capturedPiece
-          )
-        : gameState.capturedPiecesBySecondPlayer;
-
-      setGameState({
-        board: newBoard,
-        isFirstPlayerTurn: !gameState.isFirstPlayerTurn,
-        selectedPosition: null,
-        gameResult,
-        capturedPiecesByFirstPlayer: newCapturedByFirst,
-        capturedPiecesBySecondPlayer: newCapturedBySecond,
-        promotionChoice: null,
-        gameMode: gameState.gameMode,
-      });
-      setPossibleMoves([]);
-    },
-    [
-      gameState.board,
-      gameState.isFirstPlayerTurn,
-      gameState.capturedPiecesByFirstPlayer,
-      gameState.capturedPiecesBySecondPlayer,
-      gameState.gameMode,
-    ]
-  );
-
-  /**
-   * 駒が選択されていない状態でのクリック処理
-   */
-  const handleClickWithoutSelection = useCallback(
-    (
-      position: Position,
-      clickedPiece: Piece | null,
-      isFirstPlayerTurn: boolean
-    ) => {
-      const isOwnPiece =
-        clickedPiece && clickedPiece.isFirstPlayer === isFirstPlayerTurn;
-      if (!isOwnPiece) {
-        return;
-      }
-      handleOwnPieceClick(position, clickedPiece);
-    },
-    [handleOwnPieceClick]
-  );
-
-  /**
-   * 持ち駒を配置する処理
-   */
-  const handlePlaceCapturedPiece = useCallback(
-    (position: Position, pieceType: PieceType, isFirstPlayerTurn: boolean) => {
-      const { board } = gameState;
-
-      if (!canPlaceCapturedPiece(board, position)) {
-        return;
-      }
-
-      const newBoard = placeCapturedPiece(
-        board,
-        position,
-        pieceType,
-        isFirstPlayerTurn
-      );
-      const gameResult = judgeGameResult(newBoard);
-
-      const newCapturedByFirst = isFirstPlayerTurn
-        ? removeCapturedPiece(gameState.capturedPiecesByFirstPlayer, pieceType)
-        : gameState.capturedPiecesByFirstPlayer;
-      const newCapturedBySecond = !isFirstPlayerTurn
-        ? removeCapturedPiece(gameState.capturedPiecesBySecondPlayer, pieceType)
-        : gameState.capturedPiecesBySecondPlayer;
-
-      setGameState({
-        board: newBoard,
-        isFirstPlayerTurn: !isFirstPlayerTurn,
-        selectedPosition: null,
-        gameResult,
-        capturedPiecesByFirstPlayer: newCapturedByFirst,
-        capturedPiecesBySecondPlayer: newCapturedBySecond,
-        promotionChoice: null,
-        gameMode: gameState.gameMode,
-      });
-      setSelectedCapturedPiece(null);
-    },
-    [gameState]
-  );
-
-  /**
-   * 駒が選択されている状態でのクリック処理
-   */
-  const handleClickWithSelection = useCallback(
-    (
-      position: Position,
-      clickedPiece: Piece | null,
-      selectedPosition: Position,
-      isFirstPlayerTurn: boolean,
-      board: (Piece | null)[][]
-    ) => {
-      const isSameSquare =
-        selectedPosition.row === position.row &&
-        selectedPosition.col === position.col;
-
-      if (isSameSquare) {
-        handleSameSquareClick();
-        return;
-      }
-
-      const isOwnPiece =
-        clickedPiece && clickedPiece.isFirstPlayer === isFirstPlayerTurn;
-
-      if (isOwnPiece) {
-        handleOwnPieceClick(position, clickedPiece);
-        return;
-      }
-
-      const isMoveValid = isValidMoveFromSelectedPosToTargetPos(
-        board,
-        selectedPosition,
-        position
-      );
-
-      if (isMoveValid) {
-        const selectedPiece = board[selectedPosition.row][selectedPosition.col];
-        if (!selectedPiece) {
-          return;
-        }
-
-        // 成り駒は成り判定しない
-        if (isPromotedPiece(selectedPiece.type)) {
-          handlePieceMove(selectedPosition, position, false);
-          return;
-        }
-
-        // 成ることができるか判定
-        const canPromote = enablePromotionAfterMove(
-          selectedPosition,
-          position,
-          selectedPiece.type,
-          isFirstPlayerTurn
-        );
-
-        if (!canPromote) {
-          handlePieceMove(selectedPosition, position, false);
-          return;
-        }
-
-        // 必ず成らないといけないか判定
-        const mustPromote = checkMustPromote(
-          position,
-          selectedPiece.type,
-          isFirstPlayerTurn
-        );
-
-        if (mustPromote) {
-          // 必ず成る場合は自動的に成る
-          handlePieceMove(selectedPosition, position, true);
-          return;
-        }
-
-        // 成り選択ダイアログを表示
-        setGameState((prev) => ({
-          ...prev,
-          promotionChoice: {
-            fromPos: selectedPosition,
-            toPos: position,
-            pieceType: selectedPiece.type,
-            mustPromote: false,
-          },
-        }));
-      }
-    },
-    [handleSameSquareClick, handleOwnPieceClick, handlePieceMove]
-  );
-
-  /**
-   * マス目がクリックされた時の処理
-   */
-  const handleSquareClick = useCallback(
-    (position: Position): void => {
-      const { board, selectedPosition, isFirstPlayerTurn, gameResult } =
-        gameState;
-
-      const isGameOver = gameResult !== "playing_game";
-      if (isGameOver) {
-        return;
-      }
-
-      // CPUが思考中はクリックを無視
-      if (isCpuThinking) {
-        return;
-      }
-
-      if (selectedCapturedPiece) {
-        handlePlaceCapturedPiece(
-          position,
-          selectedCapturedPiece,
-          isFirstPlayerTurn
-        );
-        return;
-      }
-
-      const clickedPiece = board[position.row][position.col];
-
-      if (!selectedPosition) {
-        handleClickWithoutSelection(position, clickedPiece, isFirstPlayerTurn);
-        return;
-      }
-
-      handleClickWithSelection(
-        position,
-        clickedPiece,
-        selectedPosition,
-        isFirstPlayerTurn,
-        board
-      );
-    },
-    [
-      gameState,
-      selectedCapturedPiece,
-      isCpuThinking,
-      handlePlaceCapturedPiece,
-      handleClickWithoutSelection,
-      handleClickWithSelection,
-    ]
-  );
-
-  /**
-   * 持ち駒がクリックされた時の処理
-   */
-  const handleCapturedPieceClick = useCallback((pieceType: PieceType) => {
-    setSelectedCapturedPiece((prev) => {
-      // 同じ持ち駒がクリックされた場合は選択を解除
-      if (prev === pieceType) {
-        return null;
-      }
-      return pieceType;
-    });
-    setGameState((prev) => ({
-      ...prev,
-      selectedPosition: null,
-    }));
-    setPossibleMoves([]);
-  }, []);
-
-  /**
-   * 成りを選択したときの処理
-   */
-  const handlePromote = useCallback(() => {
-    const { promotionChoice } = gameState;
-    if (!promotionChoice) {
-      return;
-    }
-
-    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, true);
-  }, [gameState, handlePieceMove]);
-
-  /**
-   * 成らないを選択したときの処理
-   */
-  const handleDeclinePromotion = useCallback(() => {
-    const { promotionChoice } = gameState;
-    if (!promotionChoice) {
-      return;
-    }
-
-    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, false);
-  }, [gameState, handlePieceMove]);
 
   /**
    * ゲームをリセット
@@ -420,53 +90,262 @@ export const useShogiGame = () => {
   }, []);
 
   /**
+   * 駒を移動する処理
+   */
+  const handlePieceMove = useCallback(
+    (from: Position, to: Position, shouldPromote = false) => {
+      setGameState((prev) => {
+        const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
+          prev.board,
+          from,
+          to,
+          shouldPromote
+        );
+        const gameResult = judgeGameResult(newBoard);
+
+        const newCapturedByFirst =
+          capturedPiece && prev.isFirstPlayerTurn
+            ? addCapturedPiece(prev.capturedPiecesByFirstPlayer, capturedPiece)
+            : prev.capturedPiecesByFirstPlayer;
+
+        const newCapturedBySecond =
+          capturedPiece && !prev.isFirstPlayerTurn
+            ? addCapturedPiece(prev.capturedPiecesBySecondPlayer, capturedPiece)
+            : prev.capturedPiecesBySecondPlayer;
+
+        setPossibleMoves([]);
+
+        return {
+          ...prev,
+          board: newBoard,
+          isFirstPlayerTurn: !prev.isFirstPlayerTurn,
+          selectedPosition: null,
+          gameResult,
+          capturedPiecesByFirstPlayer: newCapturedByFirst,
+          capturedPiecesBySecondPlayer: newCapturedBySecond,
+          promotionChoice: null,
+        };
+      });
+    },
+    []
+  );
+
+  /**
+   * 持ち駒を配置する処理
+   */
+  const handlePlaceCapturedPiece = useCallback(
+    (position: Position, pieceType: PieceType, isFirstPlayerTurn: boolean) => {
+      setGameState((prev) => {
+        if (!canPlaceCapturedPiece(prev.board, position)) {
+          return prev;
+        }
+        const newBoard = placeCapturedPiece(
+          prev.board,
+          position,
+          pieceType,
+          isFirstPlayerTurn
+        );
+        const gameResult = judgeGameResult(newBoard);
+
+        const newCapturedByFirst = isFirstPlayerTurn
+          ? removeCapturedPiece(prev.capturedPiecesByFirstPlayer, pieceType)
+          : prev.capturedPiecesByFirstPlayer;
+
+        const newCapturedBySecond = !isFirstPlayerTurn
+          ? removeCapturedPiece(prev.capturedPiecesBySecondPlayer, pieceType)
+          : prev.capturedPiecesBySecondPlayer;
+
+        setSelectedCapturedPiece(null);
+        setPossibleMoves([]);
+
+        return {
+          ...prev,
+          board: newBoard,
+          isFirstPlayerTurn: !isFirstPlayerTurn,
+          selectedPosition: null,
+          gameResult,
+          capturedPiecesByFirstPlayer: newCapturedByFirst,
+          capturedPiecesBySecondPlayer: newCapturedBySecond,
+          promotionChoice: null,
+        };
+      });
+    },
+    []
+  );
+
+  /**
+   * マス目がクリックされた時の処理
+   */
+  const handleSquareClick = useCallback(
+    (position: Position) => {
+      setGameState((prev) => {
+        if (prev.gameResult !== "playing_game") return prev;
+
+        // CPU思考中は無視
+        if (isCpuThinking) return prev;
+
+        // 持ち駒配置処理
+        if (selectedCapturedPiece) {
+          handlePlaceCapturedPiece(
+            position,
+            selectedCapturedPiece,
+            prev.isFirstPlayerTurn
+          );
+          return prev;
+        }
+
+        const clickedPiece = prev.board[position.row][position.col];
+
+        // 選択中の駒がない場合
+        if (!prev.selectedPosition) {
+          if (
+            clickedPiece &&
+            clickedPiece.isFirstPlayer === prev.isFirstPlayerTurn
+          ) {
+            setPossibleMoves(
+              getMovablePositions(prev.board, position, clickedPiece)
+            );
+            return { ...prev, selectedPosition: position };
+          }
+          return prev;
+        }
+
+        const selPos = prev.selectedPosition;
+
+        // 同じマスなら選択解除
+        if (selPos.row === position.row && selPos.col === position.col) {
+          setPossibleMoves([]);
+          return { ...prev, selectedPosition: null };
+        }
+
+        // 自分の駒なら再選択
+        if (
+          clickedPiece &&
+          clickedPiece.isFirstPlayer === prev.isFirstPlayerTurn
+        ) {
+          setPossibleMoves(
+            getMovablePositions(prev.board, position, clickedPiece)
+          );
+          return { ...prev, selectedPosition: position };
+        }
+
+        // 移動可能かチェック
+        if (
+          !isValidMoveFromSelectedPosToTargetPos(prev.board, selPos, position)
+        ) {
+          return prev;
+        }
+
+        const piece = prev.board[selPos.row][selPos.col];
+        if (!piece) return prev;
+
+        const canPromote = enablePromotionAfterMove(
+          selPos,
+          position,
+          piece.type,
+          prev.isFirstPlayerTurn
+        );
+        const mustPromote = checkMustPromote(
+          position,
+          piece.type,
+          prev.isFirstPlayerTurn
+        );
+
+        if (isPromotedPiece(piece.type) || !canPromote) {
+          handlePieceMove(selPos, position, false);
+        } else if (mustPromote) {
+          handlePieceMove(selPos, position, true);
+        } else {
+          // 成り選択
+          return {
+            ...prev,
+            promotionChoice: {
+              fromPos: selPos,
+              toPos: position,
+              pieceType: piece.type,
+              mustPromote: false,
+            },
+          };
+        }
+
+        return prev;
+      });
+    },
+    [
+      selectedCapturedPiece,
+      isCpuThinking,
+      handlePlaceCapturedPiece,
+      handlePieceMove,
+    ]
+  );
+
+  /**
+   * 成りを選択したときの処理
+   */
+  const handlePromote = useCallback(() => {
+    const { promotionChoice } = gameState;
+    if (!promotionChoice) return;
+    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, true);
+  }, [gameState, handlePieceMove]);
+
+  /**
+   * 成らないを選択したときの処理
+   */
+  const handleDeclinePromotion = useCallback(() => {
+    const { promotionChoice } = gameState;
+    if (!promotionChoice) return;
+    handlePieceMove(promotionChoice.fromPos, promotionChoice.toPos, false);
+  }, [gameState, handlePieceMove]);
+
+  /**
+   * 持ち駒がクリックされたときの処理
+   */
+  const handleCapturedPieceClick = useCallback((pieceType: PieceType) => {
+    setSelectedCapturedPiece((prev) => (prev === pieceType ? null : pieceType));
+    setGameState((prev) => ({ ...prev, selectedPosition: null }));
+    setPossibleMoves([]);
+  }, []);
+
+  /**
    * CPUの手を実行
    */
   const executeCpuMove = useCallback(() => {
-    console.log('executeCpuMove called');
-    console.log('board:', gameState.board);
-    console.log('capturedPieces:', gameState.capturedPiecesBySecondPlayer);
+    setGameState((prev) => {
+      const cpuMove = selectCpuMove(
+        prev.board,
+        prev.capturedPiecesBySecondPlayer
+      );
+      if (!cpuMove) {
+        setIsCpuThinking(false);
+        return prev;
+      }
 
-    const cpuMove = selectCpuMove(gameState.board, gameState.capturedPiecesBySecondPlayer);
-    console.log('cpuMove:', cpuMove);
+      const { fromPos, toPos, capturedPieceType } = cpuMove;
 
-    if (!cpuMove) {
-      console.log('No valid CPU move found');
+      if (fromPos === null && capturedPieceType) {
+        handlePlaceCapturedPiece(toPos, capturedPieceType, false);
+        setIsCpuThinking(false);
+        return prev;
+      }
+
+      if (fromPos === null) {
+        setIsCpuThinking(false);
+        return prev;
+      }
+
+      const piece = prev.board[fromPos.row][fromPos.col];
+      if (!piece) {
+        setIsCpuThinking(false);
+        return prev;
+      }
+
+      const shouldPromote = shouldCpuPromote(fromPos, toPos, piece.type, false);
+      handlePieceMove(fromPos, toPos, shouldPromote);
       setIsCpuThinking(false);
-      return;
-    }
 
-    const { fromPos, toPos, capturedPieceType } = cpuMove;
-
-    // 持ち駒を使う場合
-    if (fromPos === null && capturedPieceType) {
-      console.log('Placing captured piece:', capturedPieceType, 'at', toPos);
-      handlePlaceCapturedPiece(toPos, capturedPieceType, false);
-      setIsCpuThinking(false);
-      return;
-    }
-
-    // 盤上の駒を動かす場合
-    if (fromPos === null) {
-      console.log('fromPos is null but no capturedPieceType');
-      setIsCpuThinking(false);
-      return;
-    }
-
-    const piece = gameState.board[fromPos.row][fromPos.col];
-    if (!piece) {
-      console.log('No piece at fromPos:', fromPos);
-      setIsCpuThinking(false);
-      return;
-    }
-
-    // 成り判定
-    const shouldPromote = shouldCpuPromote(fromPos, toPos, piece.type, false);
-    console.log('Moving piece from', fromPos, 'to', toPos, 'shouldPromote:', shouldPromote);
-
-    handlePieceMove(fromPos, toPos, shouldPromote);
-    setIsCpuThinking(false);
-  }, [gameState.board, gameState.capturedPiecesBySecondPlayer, handlePieceMove, handlePlaceCapturedPiece]);
+      return prev;
+    });
+  }, [handlePieceMove, handlePlaceCapturedPiece]);
 
   /**
    * CPUのターンを監視して自動で手を指す
@@ -484,9 +363,7 @@ export const useShogiGame = () => {
         executeCpuMove();
       }, 500);
 
-      return () => {
-        clearTimeout(timer);
-      };
+      return () => clearTimeout(timer);
     }
   }, [
     gameState.gameMode,
@@ -494,6 +371,7 @@ export const useShogiGame = () => {
     gameState.gameResult,
     gameState.promotionChoice,
     executeCpuMove,
+    isCpuThinking,
   ]);
 
   return {

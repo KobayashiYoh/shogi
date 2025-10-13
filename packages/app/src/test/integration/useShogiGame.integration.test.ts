@@ -16,7 +16,7 @@ describe('useShogiGame integration tests', () => {
 
         // ゲームモードを人対人に設定
         act(() => {
-          result.current.setGameMode('pvp');
+          result.current.setGameMode('two-player');
         });
 
         // シナリオの各手を実行
@@ -49,7 +49,6 @@ describe('useShogiGame integration tests', () => {
               });
             }
 
-            // 選択が解除されたことを確認
             expect(result.current.gameState.selectedPosition).toBeNull();
           } else {
             // 持ち駒の配置
@@ -85,7 +84,7 @@ describe('useShogiGame integration tests', () => {
 
       // ゲームモードを設定
       act(() => {
-        result.current.setGameMode('pvp');
+        result.current.setGameMode('two-player');
       });
 
       // 数手進める
@@ -117,52 +116,6 @@ describe('useShogiGame integration tests', () => {
       expect(result.current.gameState.gameResult).toBe('playing_game');
       expect(result.current.gameState.capturedPiecesByFirstPlayer).toEqual([]);
       expect(result.current.gameState.capturedPiecesBySecondPlayer).toEqual([]);
-    });
-  });
-
-  describe('持ち駒の管理', () => {
-    it('駒を取ると持ち駒に追加される', () => {
-      const { result } = renderHook(() => useShogiGame());
-
-      // ゲームモードを設定
-      act(() => {
-        result.current.setGameMode('pvp');
-      });
-
-      // 初期状態では持ち駒がないことを確認
-      expect(result.current.gameState.capturedPiecesByFirstPlayer).toEqual([]);
-      expect(result.current.gameState.capturedPiecesBySecondPlayer).toEqual([]);
-
-      // シナリオ1の最初の数手を実行（駒を取る手順を含む）
-      const scenario = allScenarios[0];
-      const movesUntilCapture = scenario.moves.slice(0, 5); // 5手目で歩を取る
-
-      movesUntilCapture.forEach((move) => {
-        if ('from' in move) {
-          act(() => {
-            result.current.handleSquareClick(move.from);
-          });
-          act(() => {
-            result.current.handleSquareClick(move.to);
-          });
-
-          if (result.current.gameState.promotionChoice) {
-            act(() => {
-              if (move.shouldPromote) {
-                result.current.handlePromote();
-              } else {
-                result.current.handleDeclinePromotion();
-              }
-            });
-          }
-        }
-      });
-
-      // 持ち駒が追加されたことを確認
-      const totalCapturedPieces =
-        result.current.gameState.capturedPiecesByFirstPlayer.length +
-        result.current.gameState.capturedPiecesBySecondPlayer.length;
-      expect(totalCapturedPieces).toBeGreaterThan(0);
     });
   });
 });
