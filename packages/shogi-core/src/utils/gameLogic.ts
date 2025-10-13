@@ -1,5 +1,6 @@
 import type { Board, PieceType, Position, GameResult } from '../types';
 import { getMovablePositions } from './moveablePositionsLogic';
+import { getOriginalPieceTypeFromPromotedPieceType } from './promotionLogic';
 
 /**
  * 指定した移動が将棋のルール上有効かどうかを検証
@@ -43,8 +44,10 @@ export const calculateBoardAfterPieceMove = (
   const piece = newBoard[selectedPos.row][selectedPos.col];
   const targetPiece = newBoard[targetPos.row][targetPos.col];
 
-  // 取った駒がある場合は記録（成り駒は元に戻す処理は今後実装）
-  const capturedPiece = targetPiece ? targetPiece.type : null;
+  // 取った駒がある場合は記録（成り駒は元の駒に戻す）
+  const capturedPiece = targetPiece
+    ? getOriginalPieceTypeFromPromotedPieceType(targetPiece.type)
+    : null;
 
   // 成り処理
   if (shouldPromote && piece) {
