@@ -1,0 +1,23 @@
+{
+  "name": "@shogi/figjam-widget",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/code.ts",
+  "scripts": {
+    "build": "esbuild src/code.tsx --bundle --outfile=dist/code.js --target=es2017 --format=iife --external:figma",
+    "watch": "esbuild src/code.tsx --bundle --outfile=dist/code.js --target=es2017 --format=iife --external:figma --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@shogi/core": "*"
+  },
+  "devDependencies": {
+    "@figma/widget-typings": "^1.9.1",
+    "@types/node": "^24.6.0",
+    "esbuild": "^0.24.0",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

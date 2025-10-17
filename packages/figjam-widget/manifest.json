@@ -1,0 +1,14 @@
+{
+  "name": "Shogi Game Widget",
+  "id": "shogi-game-widget",
+  "api": "1.0.0",
+  "widgetApi": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": ["figjam"],
+  "containsWidget": true,
+  "capabilities": [],
+  "enableProposedApi": false,
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}
