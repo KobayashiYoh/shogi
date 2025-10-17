@@ -1,0 +1,10 @@
+export const WHITE = "#FFFFFF";
+export const BLACK = "#333333";
+export const GRAY = "#666666";
+export const BOARD_BACKGROUND = "#B9823E";
+export const BOARD_STROKE = "#333333";
+export const PIECE_STROKE = "#333333";
+export const PIECE_BACKGROUND = "#D6B585";
+export const DEFAULT_PIECE_TEXT = "#000000";
+export const PROMOTED_PIECE_TEXT = "#CC0000";
+export const CAPTURED_PIECE_AREA = "#4B281B";
