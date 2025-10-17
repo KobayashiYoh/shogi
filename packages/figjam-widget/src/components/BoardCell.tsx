@@ -1,14 +1,9 @@
 import type { Piece as PieceType, Position } from "@shogi/core";
-import { PIECE_DISPLAY_MAP } from "@shogi/core";
+import { Piece } from "./Piece";
 import { BOARD_BACKGROUND, BOARD_STROKE } from "../constants/colors";
-import { hexToRgb } from "../utils/colorUtils";
 
-const { widget } = figma;
-const { AutoLayout, Text } = widget;
+const { AutoLayout } = widget;
 
-/**
- * 盤面のセルコンポーネント
- */
 export interface BoardCellProps {
   position: Position;
   piece: PieceType | null;
@@ -16,11 +11,8 @@ export interface BoardCellProps {
   onClick: (pos: Position) => void;
 }
 
-const CELL_SIZE = 80;
-const SELECTED_CELL_COLOR = "#FFD700";
-
 /**
- * 盤面のセル
+ * 盤面のマスを表示するコンポーネント
  */
 export const BoardCell = ({
   position,
@@ -28,7 +20,9 @@ export const BoardCell = ({
   isSelected,
   onClick,
 }: BoardCellProps) => {
-  const backgroundColor = isSelected ? SELECTED_CELL_COLOR : BOARD_BACKGROUND;
+  const cellSize = 80;
+  const backgroundColor = isSelected ? "#FFD700" : BOARD_BACKGROUND;
+  const borderColor = BOARD_STROKE;
 
   return (
     <AutoLayout
@@ -38,17 +32,13 @@ export const BoardCell = ({
       direction="vertical"
       horizontalAlignItems="center"
       verticalAlignItems="center"
-      width={CELL_SIZE}
-      height={CELL_SIZE}
+      width={cellSize}
+      height={cellSize}
       fill={backgroundColor}
-      stroke={hexToRgb(BOARD_STROKE)}
+      stroke={borderColor}
       strokeWidth={1}
     >
-      {piece && (
-        <Text fontSize={32} fill="#000000">
-          {PIECE_DISPLAY_MAP[piece.type]}
-        </Text>
-      )}
+      {piece && <Piece piece={piece} />}
     </AutoLayout>
   );
 };

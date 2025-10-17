@@ -1,6 +1,5 @@
 import type { GameMode } from "@shogi/core";
 
-const { widget } = figma;
 const { AutoLayout, Text } = widget;
 
 /**

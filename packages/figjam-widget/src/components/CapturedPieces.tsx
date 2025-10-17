@@ -2,7 +2,6 @@ import type { PieceType, Piece as PieceData } from "@shogi/core";
 import { Piece } from "./Piece";
 import { hexToRgb } from "../utils/colorUtils";
 
-const { widget } = figma;
 const { AutoLayout, Text } = widget;
 
 export interface CapturedPiecesProps {

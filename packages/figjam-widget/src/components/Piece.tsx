@@ -7,7 +7,6 @@ import {
 } from "../constants/colors";
 import { hexToRgb } from "../utils/colorUtils";
 
-const { widget } = figma;
 const { AutoLayout, SVG } = widget;
 
 const WIDTH = 64;
@@ -37,7 +36,7 @@ export const Piece = ({ piece, scale = 1, isSelected = false }: PieceProps) => {
   const svgWithText = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
     <path d="M${centerX},0 L${width},${triangleHeight} L${width},${height} L0,${height} L0,${triangleHeight} Z"
           fill="${PIECE_BACKGROUND}"
-          stroke="${isSelected ? '#FFD700' : PIECE_STROKE}"
+          stroke="${isSelected ? "#FFD700" : PIECE_STROKE}"
           stroke-width="${isSelected ? 3 : strokeWidth}" />
     <text x="${centerX}"
           y="${height / 2 + fontSize / 3}"

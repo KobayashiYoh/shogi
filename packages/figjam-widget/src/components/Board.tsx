@@ -2,7 +2,6 @@ import type { BoardIndex, Board as BoardType, Position } from "@shogi/core";
 import { BoardCell } from "./BoardCell";
 import { hexToRgb } from "../utils/colorUtils";
 
-const { widget } = figma;
 const { AutoLayout } = widget;
 
 /**

@@ -1,6 +1,5 @@
 import { hexToRgb } from "../utils/colorUtils";
 
-const { widget } = figma;
 const { AutoLayout, Text } = widget;
 
 /**
