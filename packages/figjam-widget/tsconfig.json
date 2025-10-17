@@ -1,0 +1,4 @@
+{
+  "extends": "@create-figma-plugin/tsconfig",
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
