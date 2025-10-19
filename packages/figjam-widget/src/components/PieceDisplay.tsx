@@ -1,9 +1,16 @@
 /** @jsx figma.widget.h */
 
+import type { PieceType } from 'shogi-core';
 import { PIECE_IMAGES } from '../constants';
-import type { PieceDisplayProps } from '../types';
 
 const { AutoLayout, Image } = figma.widget;
+
+/**
+ * 駒表示コンポーネントのProps
+ */
+export interface PieceDisplayProps {
+  piece: { type: PieceType; isFirstPlayer: boolean };
+}
 
 /**
  * 駒表示コンポーネント
