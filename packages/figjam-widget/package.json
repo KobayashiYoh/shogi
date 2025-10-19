@@ -2,7 +2,8 @@
   "dependencies": {
     "@create-figma-plugin/ui": "^4.0.3",
     "@create-figma-plugin/utilities": "^4.0.3",
-    "preact": ">=10"
+    "preact": ">=10",
+    "shogi-core": "file:../shogi-core"
   },
   "devDependencies": {
     "@create-figma-plugin/build": "^4.0.3",
@@ -23,7 +24,6 @@
     "containsWidget": true,
     "id": "shogi",
     "name": "Shogi",
-    "main": "src/main.tsx",
-    "ui": "src/ui.tsx"
+    "main": "src/main.tsx"
   }
 }
