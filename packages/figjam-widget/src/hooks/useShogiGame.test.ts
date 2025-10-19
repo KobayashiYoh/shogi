@@ -206,7 +206,6 @@ describe('統合テスト: 成り判定の動作確認', () => {
   });
 
   it('成り駒は既に成っているので、再度成り判定を行わない', () => {
-    const from: Position = { row: 3, col: 4 };
     const to: Position = { row: 2, col: 4 };
     const promotedPieceType: PieceType = 'tokin';
     const isFirstPlayer = true;
@@ -219,7 +218,6 @@ describe('統合テスト: 成り判定の動作確認', () => {
   });
 
   it('成り駒（竜王）が敵陣内で移動しても成り判定は発生しない', () => {
-    const from: Position = { row: 3, col: 4 };
     const to: Position = { row: 2, col: 4 };
     const promotedPieceType: PieceType = 'ryuou';
     const isFirstPlayer = true;

@@ -167,7 +167,7 @@ export function useShogiGame() {
    */
   const handlePieceSelection = (
     clickedPos: Position,
-    clickedPiece: ReturnType<typeof board>[number][number]
+    clickedPiece: Board[number][number]
   ) => {
     const isCpuMode = gameMode === "cpu";
     const canSelectPiece = isCpuMode
@@ -184,7 +184,7 @@ export function useShogiGame() {
    */
   const handlePieceMovement = async (
     clickedPos: Position,
-    clickedPiece: ReturnType<typeof board>[number][number],
+    clickedPiece: Board[number][number],
     selectedPos: Position
   ) => {
     const isSamePosClicked =
@@ -289,10 +289,11 @@ export function useShogiGame() {
   const executeCpuCapturedPieceMove = (
     currentBoard: Board,
     toPos: Position,
-    piece: NonNullable<ReturnType<typeof board>[number][number]>,
+    piece: NonNullable<Board[number][number]>,
     capturedPieceType: PieceType
   ) => {
     const newBoard: Board = currentBoard.map((row) => [...row]);
+    
     newBoard[toPos.row][toPos.col] = piece;
 
     setBoard(newBoard);
