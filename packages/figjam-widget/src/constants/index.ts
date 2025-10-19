@@ -1,22 +1,19 @@
 /**
- * 将棋盤のマス目のサイズ（ピクセル）
- */
-export const CELL_SIZE = 70;
-
-/**
  * レイアウト関連の定数
  */
 export const LAYOUT = {
   /** 全体の幅 */
-  WIDTH: 1280,
+  WIDTH: 1360,
   /** 全体の高さ */
-  HEIGHT: 810,
+  HEIGHT: 800,
   /** 持ち駒エリアの幅 */
-  CAPTURED_PIECES_AREA_WIDTH: 292,
+  CAPTURED_PIECES_AREA_WIDTH: 280,
   /** 将棋盤エリアの幅 */
-  BOARD_AREA_WIDTH: 696,
+  BOARD_AREA_WIDTH: 800,
   /** 将棋盤エリアの高さ */
-  BOARD_AREA_HEIGHT: 810,
+  BOARD_AREA_HEIGHT: 800,
+  /** 将棋盤のマス目のサイズ */
+  CELL_SIZE: 80,
 } as const;
 
 /**
@@ -24,23 +21,23 @@ export const LAYOUT = {
  */
 export const COLORS = {
   /** 背景色（空色） */
-  BACKGROUND: '#7DD3E8',
+  BACKGROUND: "#7DD3E8",
   /** 将棋盤の色 */
-  BOARD: '#D4A574',
+  BOARD: "#D4A574",
   /** 将棋盤のマス目の枠線 */
-  BOARD_STROKE: '#8B6F47',
+  BOARD_STROKE: "#8B6F47",
   /** 持ち駒エリアの背景色 */
-  CAPTURED_AREA: '#3D2817',
+  CAPTURED_AREA: "#3D2817",
   /** モーダルの背景色 */
-  MODAL: '#4A7C59',
+  MODAL: "#4A7C59",
   /** 選択中のマスの色 */
-  SELECTED_CELL: '#FFE4B5',
+  SELECTED_CELL: "#FFE4B5",
   /** テキスト色（白） */
-  TEXT_WHITE: '#FFFFFF',
+  TEXT_WHITE: "#FFFFFF",
   /** テキスト色（黒） */
-  TEXT_BLACK: '#000000',
+  TEXT_BLACK: "#000000",
   /** テキスト色（グレー） */
-  TEXT_GRAY: '#666666',
+  TEXT_GRAY: "#666666",
 } as const;
 
-export { PIECE_IMAGES } from './images';
+export { PIECE_IMAGES } from "./images";

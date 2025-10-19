@@ -81,6 +81,17 @@ export function useShogiGame() {
   };
 
   /**
+   * 取得した駒を持ち駒に追加する
+   */
+  const addCapturedPieceToPlayer = (capturedPiece: PieceType, isFirstPlayer: boolean) => {
+    if (isFirstPlayer) {
+      setFirstPlayerCapturedPieces([...firstPlayerCapturedPieces, capturedPiece]);
+    } else {
+      setSecondPlayerCapturedPieces([...secondPlayerCapturedPieces, capturedPiece]);
+    }
+  };
+
+  /**
    * 駒の移動を実行する
    */
   const executePieceMove = async (from: Position, to: Position, shouldPromote: boolean) => {
@@ -96,17 +107,7 @@ export function useShogiGame() {
     setBoard(newBoard);
 
     if (capturedPiece) {
-      if (currentPlayerIsFirst) {
-        setFirstPlayerCapturedPieces([
-          ...firstPlayerCapturedPieces,
-          capturedPiece,
-        ]);
-      } else {
-        setSecondPlayerCapturedPieces([
-          ...secondPlayerCapturedPieces,
-          capturedPiece,
-        ]);
-      }
+      addCapturedPieceToPlayer(capturedPiece, currentPlayerIsFirst);
     }
 
     setSelectedPos(null);
@@ -116,10 +117,12 @@ export function useShogiGame() {
     const result = judgeGameResult(newBoard);
     setGameResult(result);
 
-    // CPU対戦モードで、現在のプレイヤーが先手（ユーザー）で、次がCPUのターンなら自動で駒を動かす
-    // ただし、成り選択待ちの場合は実行しない（pendingMoveはここでnullになってる）
-    if (gameMode === 'cpu' && result === 'playing_game' && currentPlayerIsFirst) {
-      // CPUの手を実行
+    const shouldExecuteCpuMove =
+      gameMode === 'cpu' &&
+      result === 'playing_game' &&
+      currentPlayerIsFirst;
+
+    if (shouldExecuteCpuMove) {
       await executeCpuMove(newBoard);
     }
   };
@@ -128,20 +131,92 @@ export function useShogiGame() {
    * 成り選択ハンドラー
    */
   const handlePromotionChoice = async (shouldPromote: boolean) => {
-    if (!pendingMove) return;
+    if (!pendingMove) {
+      return;
+    }
     await executePieceMove(pendingMove.from, pendingMove.to, shouldPromote);
+  };
+
+  /**
+   * 駒の選択処理
+   */
+  const handlePieceSelection = (clickedPos: Position, clickedPiece: ReturnType<typeof board>[number][number]) => {
+    const isCpuMode = gameMode === 'cpu';
+    const canSelectPiece = isCpuMode
+      ? (clickedPiece && clickedPiece.isFirstPlayer === true)
+      : (clickedPiece && clickedPiece.isFirstPlayer === isFirstPlayerTurn);
+
+    if (canSelectPiece) {
+      setSelectedPos(clickedPos);
+    }
+  };
+
+  /**
+   * 駒の移動処理
+   */
+  const handlePieceMovement = async (
+    clickedPos: Position,
+    clickedPiece: ReturnType<typeof board>[number][number],
+    selectedPos: Position
+  ) => {
+    const isSamePosClicked = selectedPos.row === clickedPos.row && selectedPos.col === clickedPos.col;
+    if (isSamePosClicked) {
+      setSelectedPos(null);
+      return;
+    }
+
+    const isValidMove = isValidMoveFromSelectedPosToTargetPos(board, selectedPos, clickedPos);
+
+    if (isValidMove) {
+      await handleValidMove(selectedPos, clickedPos);
+      return;
+    }
+
+    // 無効な移動：別の自分の駒を選択する処理
+    const isOwnPiece = clickedPiece && clickedPiece.isFirstPlayer === isFirstPlayerTurn;
+    if (isOwnPiece) {
+      setSelectedPos(clickedPos);
+    } else {
+      setSelectedPos(null);
+    }
+  };
+
+  /**
+   * 有効な移動の処理（成り判定を含む）
+   */
+  const handleValidMove = async (from: Position, to: Position) => {
+    const movingPiece = board[from.row][from.col];
+    if (!movingPiece) {
+      return;
+    }
+
+    const mustPromote = isAutomaticPromotion(to, movingPiece.type, isFirstPlayerTurn);
+    if (mustPromote) {
+      await executePieceMove(from, to, true);
+      return;
+    }
+
+    const canPromote = enablePromotionAfterMove(from, to, movingPiece.type, isFirstPlayerTurn);
+    if (canPromote) {
+      setPendingMove({ from, to });
+      setSelectedPos(null);
+      return;
+    }
+
+    await executePieceMove(from, to, false);
   };
 
   /**
    * マスクリック時のハンドラー
    */
   const handleCellClick = async (row: number, col: number) => {
-    if (gameResult !== 'playing_game') {
+    const isGameOver = gameResult !== 'playing_game';
+    if (isGameOver) {
       return;
     }
 
-    // CPU対戦モードで、CPUのターン（後手）の時はユーザー入力を無効化
-    if (gameMode === 'cpu' && !isFirstPlayerTurn) {
+    const isCpuTurn = gameMode === 'cpu' && !isFirstPlayerTurn;
+    if (isCpuTurn) {
       return;
     }
 
@@ -152,105 +227,52 @@ export function useShogiGame() {
     const clickedPiece = board[row][col];
 
     if (selectedPos === null) {
-      // 駒の選択
-      // CPU対戦モードでは先手の駒のみ選択可能
-      const canSelectPiece = gameMode === 'cpu'
-        ? (clickedPiece && clickedPiece.isFirstPlayer === true)
-        : (clickedPiece && clickedPiece.isFirstPlayer === isFirstPlayerTurn);
-
-      if (canSelectPiece) {
-        setSelectedPos(clickedPos);
-      }
-    } else {
-      // 駒の移動
-      const isSamePosClicked =
-        selectedPos.row === row && selectedPos.col === col;
-      if (isSamePosClicked) {
-        setSelectedPos(null);
-        return;
-      }
-
-      const isValid = isValidMoveFromSelectedPosToTargetPos(
-        board,
-        selectedPos,
-        clickedPos
-      );
-
-      if (isValid) {
-        // 成り判定
-        const movingPiece = board[selectedPos.row][selectedPos.col];
-        if (!movingPiece) return;
-
-        // 自動成り判定（成らないと動けなくなる場合）
-        if (isAutomaticPromotion(clickedPos, movingPiece.type, isFirstPlayerTurn)) {
-          await executePieceMove(selectedPos, clickedPos, true);
-        } else if (
-          // 成りが可能かチェック
-          enablePromotionAfterMove(
-            selectedPos,
-            clickedPos,
-            movingPiece.type,
-            isFirstPlayerTurn
-          )
-        ) {
-          // 成り選択待ち状態にする
-          setPendingMove({ from: selectedPos, to: clickedPos });
-          setSelectedPos(null);
-        } else {
-          // 通常の移動
-          await executePieceMove(selectedPos, clickedPos, false);
-        }
-      } else {
-        // 別の自分の駒を選択
-        if (
-          clickedPiece &&
-          clickedPiece.isFirstPlayer === isFirstPlayerTurn
-        ) {
-          setSelectedPos(clickedPos);
-        } else {
-          setSelectedPos(null);
-        }
-      }
-    }
-  };
-
-  /**
-   * CPUの手を実行する
-   */
-  const executeCpuMove = async (currentBoard: Board) => {
-    const cpuMove = selectCpuMove(currentBoard, secondPlayerCapturedPieces);
-    if (!cpuMove) return;
-
-    const { fromPos, toPos, piece, capturedPieceType } = cpuMove;
-
-    // 持ち駒を使う場合
-    if (capturedPieceType && fromPos === null) {
-      const newBoard: Board = currentBoard.map((row) => [...row]);
-      newBoard[toPos.row][toPos.col] = piece;
-
-      setBoard(newBoard);
-
-      // 使った持ち駒を削除（関数型の更新）
-      setSecondPlayerCapturedPieces((prev) => {
-        const updated = [...prev];
-        const index = updated.indexOf(capturedPieceType);
-        if (index > -1) {
-          updated.splice(index, 1);
-        }
-        return updated;
-      });
-
-      setIsFirstPlayerTurn(true);
-
-      const result = judgeGameResult(newBoard);
-      setGameResult(result);
+      handlePieceSelection(clickedPos, clickedPiece);
       return;
     }
 
-    // 通常の駒の移動
-    if (!fromPos) return;
+    await handlePieceMovement(clickedPos, clickedPiece, selectedPos);
+  };
 
-    const shouldPromote = shouldCpuPromote(fromPos, toPos, piece.type, false);
+  /**
+   * 持ち駒を使用するCPUの手を実行
+   */
+  const executeCpuCapturedPieceMove = (
+    currentBoard: Board,
+    toPos: Position,
+    piece: NonNullable<ReturnType<typeof board>[number][number]>,
+    capturedPieceType: PieceType
+  ) => {
+    const newBoard: Board = currentBoard.map((row) => [...row]);
+    newBoard[toPos.row][toPos.col] = piece;
+
+    setBoard(newBoard);
+
+    setSecondPlayerCapturedPieces((prev) => {
+      const updated = [...prev];
+      const index = updated.indexOf(capturedPieceType);
+      if (index > -1) {
+        updated.splice(index, 1);
+      }
+      return updated;
+    });
+
+    setIsFirstPlayerTurn(true);
+
+    const result = judgeGameResult(newBoard);
+    setGameResult(result);
+  };
+
+  /**
+   * 盤上の駒を動かすCPUの手を実行
+   */
+  const executeCpuBoardPieceMove = (
+    currentBoard: Board,
+    fromPos: Position,
+    toPos: Position,
+    pieceType: PieceType
+  ) => {
+    const shouldPromote = shouldCpuPromote(fromPos, toPos, pieceType, false);
 
     const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
       currentBoard,
@@ -262,7 +284,6 @@ export function useShogiGame() {
     setBoard(newBoard);
 
     if (capturedPiece) {
-      // 関数型の更新
       setSecondPlayerCapturedPieces((prev) => [...prev, capturedPiece]);
     }
 
@@ -270,6 +291,30 @@ export function useShogiGame() {
 
     const result = judgeGameResult(newBoard);
     setGameResult(result);
+  };
+
+  /**
+   * CPUの手を実行する
+   */
+  const executeCpuMove = async (currentBoard: Board) => {
+    const cpuMove = selectCpuMove(currentBoard, secondPlayerCapturedPieces);
+    if (!cpuMove) {
+      return;
+    }
+
+    const { fromPos, toPos, piece, capturedPieceType } = cpuMove;
+
+    const isCapturedPieceMove = capturedPieceType && fromPos === null;
+    if (isCapturedPieceMove) {
+      executeCpuCapturedPieceMove(currentBoard, toPos, piece, capturedPieceType);
+      return;
+    }
+
+    if (!fromPos) {
+      return;
+    }
+
+    executeCpuBoardPieceMove(currentBoard, fromPos, toPos, piece.type);
   };
 
   return {

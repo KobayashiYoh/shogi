@@ -1,9 +1,9 @@
 /** @jsx figma.widget.h */
 
-import { CELL_SIZE, COLORS, LAYOUT } from '../constants';
-import type { PlayingPageProps } from '../types';
-import { CapturedPiecesDisplay } from './CapturedPiecesDisplay';
-import { PieceDisplay } from './PieceDisplay';
+import { COLORS, LAYOUT } from "../constants";
+import type { PlayingPageProps } from "../types";
+import { CapturedPiecesDisplay } from "./CapturedPiecesDisplay";
+import { PieceDisplay } from "./PieceDisplay";
 
 const { AutoLayout, Text, SVG } = figma.widget;
 
@@ -24,22 +24,8 @@ export function PlayingPage({
       direction="horizontal"
       width={LAYOUT.WIDTH}
       height={LAYOUT.HEIGHT}
-      fill={COLORS.BACKGROUND}
-      horizontalAlignItems="center"
-      verticalAlignItems="center"
     >
-      {/* 左側持ち駒エリア（先手） */}
-      <AutoLayout
-        direction="vertical"
-        width={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
-        height={LAYOUT.HEIGHT}
-        fill={COLORS.CAPTURED_AREA}
-        horizontalAlignItems="center"
-        verticalAlignItems="center"
-        padding={16}
-      >
-        <CapturedPiecesDisplay pieces={secondPlayerCapturedPieces} />
-      </AutoLayout>
+      <CapturedPiecesDisplay pieces={secondPlayerCapturedPieces} />
 
       {/* 中央将棋盤エリア */}
       <AutoLayout
@@ -63,8 +49,8 @@ export function PlayingPage({
                 return (
                   <AutoLayout
                     key={`${rowIndex}-${colIndex}`}
-                    width={CELL_SIZE}
-                    height={CELL_SIZE}
+                    width={LAYOUT.CELL_SIZE}
+                    height={LAYOUT.CELL_SIZE}
                     fill={isSelected ? COLORS.SELECTED_CELL : COLORS.BOARD}
                     stroke={COLORS.BOARD_STROKE}
                     strokeWidth={1}
@@ -80,19 +66,7 @@ export function PlayingPage({
           ))}
         </AutoLayout>
       </AutoLayout>
-
-      {/* 右側持ち駒エリア（後手） */}
-      <AutoLayout
-        direction="vertical"
-        width={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
-        height={LAYOUT.HEIGHT}
-        fill={COLORS.CAPTURED_AREA}
-        horizontalAlignItems="center"
-        verticalAlignItems="center"
-        padding={16}
-      >
-        <CapturedPiecesDisplay pieces={firstPlayerCapturedPieces} />
-      </AutoLayout>
+      <CapturedPiecesDisplay pieces={firstPlayerCapturedPieces} />
 
       {/* 成り選択ダイアログ */}
       {pendingMove && (
@@ -108,7 +82,7 @@ export function PlayingPage({
           strokeWidth={2}
           cornerRadius={12}
           effect={{
-            type: 'drop-shadow',
+            type: "drop-shadow",
             color: { r: 0, g: 0, b: 0, a: 0.25 },
             offset: { x: 0, y: 4 },
             blur: 8,

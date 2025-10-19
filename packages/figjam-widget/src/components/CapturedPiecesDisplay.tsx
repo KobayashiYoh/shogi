@@ -1,8 +1,9 @@
 /** @jsx figma.widget.h */
 
-import type { PieceType } from 'shogi-core';
-import type { CapturedPiecesDisplayProps } from '../types';
-import { PieceDisplay } from './PieceDisplay';
+import type { PieceType } from "shogi-core";
+import type { CapturedPiecesDisplayProps } from "../types";
+import { PieceDisplay } from "./PieceDisplay";
+import { COLORS, LAYOUT } from "../constants";
 
 const { AutoLayout, Text } = figma.widget;
 
@@ -23,6 +24,9 @@ export function CapturedPiecesDisplay({ pieces }: CapturedPiecesDisplayProps) {
       spacing={8}
       horizontalAlignItems="start"
       verticalAlignItems="start"
+      fill={COLORS.CAPTURED_AREA}
+      width={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
+      height={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
     >
       {uniquePieces.map((pieceType) => (
         <AutoLayout
