@@ -10,12 +10,15 @@
     "@create-figma-plugin/tsconfig": "^4.0.3",
     "@figma/plugin-typings": "1.109.0",
     "@figma/widget-typings": "1.11.0",
-    "typescript": ">=5"
+    "@types/node": "^24.6.0",
+    "typescript": ">=5",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
     "watch": "build-figma-plugin --typecheck --watch",
-    "test:run": "echo 'No tests for figjam-widget'"
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "figma-plugin": {
     "editorType": [
