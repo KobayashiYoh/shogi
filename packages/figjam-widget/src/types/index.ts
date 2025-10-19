@@ -15,7 +15,9 @@ export interface PlayingPageProps {
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
   selectedPos: Position | null;
+  pendingMove: { from: Position; to: Position } | null;
   onCellClick: (row: number, col: number) => void;
+  onPromotionChoice: (shouldPromote: boolean) => void;
 }
 
 /**
