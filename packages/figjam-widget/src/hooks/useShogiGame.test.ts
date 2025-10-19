@@ -4,6 +4,7 @@ import {
   INITIAL_BOARD,
   enablePromotionAfterMove,
   isAutomaticPromotion,
+  isPromotedPiece,
   selectCpuMove,
   shouldCpuPromote,
 } from 'shogi-core';
@@ -99,6 +100,28 @@ describe('成り判定のロジックテスト', () => {
       expect(isAutomaticPromotion({ row: 0, col: 4 }, 'kaku', true)).toBe(false);
     });
   });
+
+  describe('isPromotedPiece (成り駒判定)', () => {
+    it('成り駒を正しく判定する', () => {
+      expect(isPromotedPiece('tokin')).toBe(true);
+      expect(isPromotedPiece('ryuou')).toBe(true);
+      expect(isPromotedPiece('ryuuma')).toBe(true);
+      expect(isPromotedPiece('narigin')).toBe(true);
+      expect(isPromotedPiece('narikei')).toBe(true);
+      expect(isPromotedPiece('narikyo')).toBe(true);
+    });
+
+    it('未成駒を正しく判定する', () => {
+      expect(isPromotedPiece('fu')).toBe(false);
+      expect(isPromotedPiece('hisha')).toBe(false);
+      expect(isPromotedPiece('kaku')).toBe(false);
+      expect(isPromotedPiece('gin')).toBe(false);
+      expect(isPromotedPiece('keima')).toBe(false);
+      expect(isPromotedPiece('kyou')).toBe(false);
+      expect(isPromotedPiece('kin')).toBe(false);
+      expect(isPromotedPiece('ou')).toBe(false);
+    });
+  });
 });
 
 describe('CPU対戦のロジックテスト', () => {
@@ -180,6 +203,33 @@ describe('統合テスト: 成り判定の動作確認', () => {
     const isFirstPlayer = true;
 
     expect(isAutomaticPromotion(to, pieceType, isFirstPlayer)).toBe(true);
+  });
+
+  it('成り駒は既に成っているので、再度成り判定を行わない', () => {
+    const from: Position = { row: 3, col: 4 };
+    const to: Position = { row: 2, col: 4 };
+    const promotedPieceType: PieceType = 'tokin';
+    const isFirstPlayer = true;
+
+    // 成り駒かどうかを判定
+    expect(isPromotedPiece(promotedPieceType)).toBe(true);
+
+    // 成り駒は自動成り判定をスキップすべき
+    expect(isAutomaticPromotion(to, promotedPieceType, isFirstPlayer)).toBe(false);
+  });
+
+  it('成り駒（竜王）が敵陣内で移動しても成り判定は発生しない', () => {
+    const from: Position = { row: 3, col: 4 };
+    const to: Position = { row: 2, col: 4 };
+    const promotedPieceType: PieceType = 'ryuou';
+    const isFirstPlayer = true;
+
+    // 成り駒であることを確認
+    expect(isPromotedPiece(promotedPieceType)).toBe(true);
+
+    // useShogiGameのhandleValidMoveでは、isPromotedPieceがtrueの場合、
+    // enablePromotionAfterMoveやisAutomaticPromotionのチェックをスキップする
+    expect(isAutomaticPromotion(to, promotedPieceType, isFirstPlayer)).toBe(false);
   });
 });
 
