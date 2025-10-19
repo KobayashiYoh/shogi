@@ -18,6 +18,19 @@ import {
 const { useSyncedState } = figma.widget;
 
 /**
+ * 将棋ゲームの状態
+ */
+export interface ShogiGameState {
+  gameMode: GameMode | null;
+  board: Board;
+  isFirstPlayerTurn: boolean;
+  gameResult: GameResult;
+  firstPlayerCapturedPieces: PieceType[];
+  secondPlayerCapturedPieces: PieceType[];
+  selectedPos: Position | null;
+}
+
+/**
  * 将棋ゲームの状態管理フック
  */
 export function useShogiGame() {
