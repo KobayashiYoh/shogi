@@ -1,11 +1,24 @@
 /** @jsx figma.widget.h */
 
-import { COLORS, LAYOUT } from "../constants";
-import type { PlayingPageProps } from "../types";
-import { CapturedPiecesDisplay } from "./CapturedPiecesDisplay";
-import { PieceDisplay } from "./PieceDisplay";
+import type { Board as BoardType, PieceType, Position } from 'shogi-core';
+import { LAYOUT } from "../constants";
+import { GameLayout } from "./GameLayout";
+import { PromotionDialog } from "./PromotionDialog";
 
-const { AutoLayout, Text, SVG } = figma.widget;
+const { AutoLayout } = figma.widget;
+
+/**
+ * ゲームプレイページのProps
+ */
+export interface PlayingPageProps {
+  board: BoardType;
+  firstPlayerCapturedPieces: PieceType[];
+  secondPlayerCapturedPieces: PieceType[];
+  selectedPos: Position | null;
+  pendingMove: { from: Position; to: Position } | null;
+  onCellClick: (row: number, col: number) => void;
+  onPromotionChoice: (shouldPromote: boolean) => void;
+}
 
 /**
  * ゲームプレイページ
@@ -21,107 +34,21 @@ export function PlayingPage({
 }: PlayingPageProps) {
   return (
     <AutoLayout
-      direction="horizontal"
+      direction="vertical"
+      horizontalAlignItems="center"
+      verticalAlignItems="center"
       width={LAYOUT.WIDTH}
       height={LAYOUT.HEIGHT}
     >
-      <CapturedPiecesDisplay pieces={secondPlayerCapturedPieces} />
+      <GameLayout
+        board={board}
+        firstPlayerCapturedPieces={firstPlayerCapturedPieces}
+        secondPlayerCapturedPieces={secondPlayerCapturedPieces}
+        selectedPos={selectedPos}
+        onCellClick={onCellClick}
+      />
 
-      {/* 中央将棋盤エリア */}
-      <AutoLayout
-        direction="vertical"
-        width={LAYOUT.BOARD_AREA_WIDTH}
-        height={LAYOUT.BOARD_AREA_HEIGHT}
-        fill={COLORS.BOARD}
-        horizontalAlignItems="center"
-        verticalAlignItems="center"
-        padding={{ vertical: 63, horizontal: 0 }}
-      >
-        <AutoLayout direction="vertical" spacing={0}>
-          {board.map((row, rowIndex: number) => (
-            <AutoLayout key={rowIndex} direction="horizontal" spacing={0}>
-              {row.map((piece, colIndex: number) => {
-                const isSelected =
-                  selectedPos !== null &&
-                  selectedPos.row === rowIndex &&
-                  selectedPos.col === colIndex;
-
-                return (
-                  <AutoLayout
-                    key={`${rowIndex}-${colIndex}`}
-                    width={LAYOUT.CELL_SIZE}
-                    height={LAYOUT.CELL_SIZE}
-                    fill={isSelected ? COLORS.SELECTED_CELL : COLORS.BOARD}
-                    stroke={COLORS.BOARD_STROKE}
-                    strokeWidth={1}
-                    horizontalAlignItems="center"
-                    verticalAlignItems="center"
-                    onClick={() => onCellClick(rowIndex, colIndex)}
-                  >
-                    {piece && <PieceDisplay piece={piece} />}
-                  </AutoLayout>
-                );
-              })}
-            </AutoLayout>
-          ))}
-        </AutoLayout>
-      </AutoLayout>
-      <CapturedPiecesDisplay pieces={firstPlayerCapturedPieces} />
-
-      {/* 成り選択ダイアログ */}
-      {pendingMove && (
-        <AutoLayout
-          positioning="absolute"
-          x={LAYOUT.WIDTH / 2 - 150}
-          y={LAYOUT.HEIGHT / 2 - 100}
-          direction="vertical"
-          spacing={20}
-          padding={30}
-          fill="#FFFFFF"
-          stroke="#000000"
-          strokeWidth={2}
-          cornerRadius={12}
-          effect={{
-            type: "drop-shadow",
-            color: { r: 0, g: 0, b: 0, a: 0.25 },
-            offset: { x: 0, y: 4 },
-            blur: 8,
-          }}
-        >
-          <Text
-            fontSize={24}
-            fontWeight={700}
-            fill="#000000"
-            horizontalAlignText="center"
-          >
-            駒を成りますか？
-          </Text>
-
-          <AutoLayout direction="horizontal" spacing={20}>
-            <AutoLayout
-              padding={{ vertical: 12, horizontal: 24 }}
-              fill="#4CAF50"
-              cornerRadius={8}
-              onClick={() => onPromotionChoice(true)}
-            >
-              <Text fontSize={18} fontWeight={600} fill="#FFFFFF">
-                はい
-              </Text>
-            </AutoLayout>
-
-            <AutoLayout
-              padding={{ vertical: 12, horizontal: 24 }}
-              fill="#F44336"
-              cornerRadius={8}
-              onClick={() => onPromotionChoice(false)}
-            >
-              <Text fontSize={18} fontWeight={600} fill="#FFFFFF">
-                いいえ
-              </Text>
-            </AutoLayout>
-          </AutoLayout>
-        </AutoLayout>
-      )}
+      {pendingMove && <PromotionDialog onPromotionChoice={onPromotionChoice} />}
     </AutoLayout>
   );
 }
