@@ -1,3 +1,3 @@
 # CLAUDE.md
 
-必ずAGENTS.mdを参照してください。
+必ず`AGENTS.md`と`docs/CORDING_STYLE.md`を参照してください。
