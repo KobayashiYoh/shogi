@@ -36,6 +36,7 @@ function ShogiWidget() {
       <ContinuePage
         onQuit={handleQuit}
         onPlayAgain={handlePlayAgain}
+        board={board}
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
       />
