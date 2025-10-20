@@ -7,6 +7,7 @@ import {
   isPromotedPiece,
   selectCpuMove,
   shouldCpuPromote,
+  calculateBoardAfterPieceMove,
 } from 'shogi-core';
 
 /**
@@ -260,6 +261,205 @@ describe('統合テスト: CPU対戦の動作確認', () => {
 
     if (isAutomaticPromotion(to, pieceType, false)) {
       expect(shouldPromote).toBe(true);
+    }
+  });
+
+  it('プレイヤーが駒を動かした後、CPUが有効な手を選択できる', () => {
+    // 初期盤面から開始
+    let board: Board = INITIAL_BOARD;
+    const secondPlayerCapturedPieces: PieceType[] = [];
+
+    // プレイヤー（先手）が76歩を指す
+    const playerFrom: Position = { row: 6, col: 6 };
+    const playerTo: Position = { row: 5, col: 6 };
+
+    // プレイヤーの手を適用
+    const { newBoard: boardAfterPlayer } = calculateBoardAfterPieceMove(
+      board,
+      playerFrom,
+      playerTo,
+      false
+    );
+
+    // CPUが有効な手を選択できることを確認
+    const cpuMove = selectCpuMove(boardAfterPlayer, secondPlayerCapturedPieces);
+
+    expect(cpuMove).toBeTruthy();
+
+    if (cpuMove) {
+      // CPUの駒であることを確認
+      expect(cpuMove.piece.isFirstPlayer).toBe(false);
+
+      // 有効な位置に移動できることを確認
+      expect(cpuMove.toPos.row).toBeGreaterThanOrEqual(0);
+      expect(cpuMove.toPos.row).toBeLessThanOrEqual(8);
+      expect(cpuMove.toPos.col).toBeGreaterThanOrEqual(0);
+      expect(cpuMove.toPos.col).toBeLessThanOrEqual(8);
+    }
+  });
+
+  it('プレイヤーが駒を取った後、CPUがその持ち駒を使って手を指せる', () => {
+    // 簡略化した盤面を作成（王のみ配置）
+    const board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+    board[0][4] = { type: 'ou', isFirstPlayer: false };
+    board[8][4] = { type: 'ou', isFirstPlayer: true };
+
+    // CPUが歩を持ち駒として持っている
+    const secondPlayerCapturedPieces: PieceType[] = ['fu'];
+
+    // CPUが持ち駒を使った手を選択できることを確認
+    const cpuMove = selectCpuMove(board, secondPlayerCapturedPieces);
+
+    expect(cpuMove).toBeTruthy();
+
+    if (cpuMove) {
+      // 持ち駒を使う手の場合、fromPosがnullで、capturedPieceTypeが設定されている
+      if (cpuMove.fromPos === null) {
+        expect(cpuMove.capturedPieceType).toBe('fu');
+        expect(cpuMove.piece.isFirstPlayer).toBe(false);
+        expect(cpuMove.piece.type).toBe('fu');
+      }
+    }
+  });
+
+  it('プレイヤーの手の後、CPUの手を適用してもゲームが継続できる', () => {
+    // 初期盤面から開始
+    let board: Board = INITIAL_BOARD;
+    let secondPlayerCapturedPieces: PieceType[] = [];
+
+    // プレイヤー（先手）が76歩を指す
+    const playerFrom: Position = { row: 6, col: 6 };
+    const playerTo: Position = { row: 5, col: 6 };
+
+    // プレイヤーの手を適用
+    const { newBoard: boardAfterPlayer, capturedPiece: playerCapturedPiece } =
+      calculateBoardAfterPieceMove(board, playerFrom, playerTo, false);
+
+    if (playerCapturedPiece) {
+      secondPlayerCapturedPieces = [...secondPlayerCapturedPieces, playerCapturedPiece];
+    }
+
+    // CPUの手を選択
+    const cpuMove = selectCpuMove(boardAfterPlayer, secondPlayerCapturedPieces);
+    expect(cpuMove).toBeTruthy();
+
+    if (cpuMove && cpuMove.fromPos) {
+      // CPUの手を適用
+      const shouldPromote = shouldCpuPromote(
+        cpuMove.fromPos,
+        cpuMove.toPos,
+        cpuMove.piece.type,
+        false
+      );
+
+      const { newBoard: boardAfterCpu } = calculateBoardAfterPieceMove(
+        boardAfterPlayer,
+        cpuMove.fromPos,
+        cpuMove.toPos,
+        shouldPromote
+      );
+
+      // CPUの手の後も盤面が有効であることを確認
+      expect(boardAfterCpu).toBeTruthy();
+      expect(boardAfterCpu.length).toBe(9);
+      expect(boardAfterCpu[0].length).toBe(9);
+
+      // CPUの駒が移動先に配置されていることを確認
+      const movedPiece = boardAfterCpu[cpuMove.toPos.row][cpuMove.toPos.col];
+      expect(movedPiece).toBeTruthy();
+      expect(movedPiece?.isFirstPlayer).toBe(false);
+    }
+  });
+
+  /**
+   * 【重要】デグレ防止テスト: ユーザーがコマを動かした後にCPUがコマを動かすこと
+   * このテストは絶対に成功し続けなければならない
+   */
+  it('【デグレ防止】ユーザーがコマを動かした後に必ずCPUがコマを動かす', () => {
+    // 初期盤面から開始
+    const initialBoard: Board = INITIAL_BOARD;
+    const gameMode = 'cpu';
+    let isFirstPlayerTurn = true;
+    let secondPlayerCapturedPieces: PieceType[] = [];
+
+    // プレイヤー（先手）が76歩を指す
+    const playerFrom: Position = { row: 6, col: 6 };
+    const playerTo: Position = { row: 5, col: 6 };
+
+    // 【ステップ1】プレイヤーの手を適用（executePieceMoveの処理を再現）
+    const currentPlayerIsFirst = isFirstPlayerTurn;
+    const { newBoard, capturedPiece } = calculateBoardAfterPieceMove(
+      initialBoard,
+      playerFrom,
+      playerTo,
+      false
+    );
+
+    let updatedSecondPlayerCapturedPieces = secondPlayerCapturedPieces;
+    if (capturedPiece && currentPlayerIsFirst) {
+      updatedSecondPlayerCapturedPieces = [
+        ...secondPlayerCapturedPieces,
+        capturedPiece,
+      ];
+    }
+
+    // ターンを切り替え
+    isFirstPlayerTurn = !currentPlayerIsFirst;
+
+    // 【ステップ2】CPUのターンであることを確認
+    const shouldExecuteCpuMove =
+      gameMode === 'cpu' && isFirstPlayerTurn === false;
+
+    expect(shouldExecuteCpuMove).toBe(true);
+
+    // 【ステップ3】CPUが有効な手を選択できることを確認
+    const cpuMove = selectCpuMove(newBoard, updatedSecondPlayerCapturedPieces);
+
+    // CPUの手が必ず存在することを確認（デグレ防止の核心）
+    expect(cpuMove).toBeTruthy();
+    expect(cpuMove).not.toBeNull();
+    expect(cpuMove).not.toBeUndefined();
+
+    if (cpuMove) {
+      // CPUの駒であることを確認
+      expect(cpuMove.piece.isFirstPlayer).toBe(false);
+
+      // 【ステップ4】CPUの手を適用
+      if (cpuMove.fromPos === null && cpuMove.capturedPieceType) {
+        // 持ち駒を使う場合
+        const cpuNewBoard: Board = newBoard.map((row) => [...row]);
+        cpuNewBoard[cpuMove.toPos.row][cpuMove.toPos.col] = cpuMove.piece;
+
+        // CPUの駒が正しく配置されたことを確認
+        expect(cpuNewBoard[cpuMove.toPos.row][cpuMove.toPos.col]).toBeTruthy();
+        expect(
+          cpuNewBoard[cpuMove.toPos.row][cpuMove.toPos.col]?.isFirstPlayer
+        ).toBe(false);
+      } else if (cpuMove.fromPos) {
+        // 盤上の駒を動かす場合
+        const shouldPromote = shouldCpuPromote(
+          cpuMove.fromPos,
+          cpuMove.toPos,
+          cpuMove.piece.type,
+          false
+        );
+
+        const { newBoard: cpuNewBoard } = calculateBoardAfterPieceMove(
+          newBoard,
+          cpuMove.fromPos,
+          cpuMove.toPos,
+          shouldPromote
+        );
+
+        // CPUの駒が正しく移動したことを確認
+        expect(cpuNewBoard[cpuMove.toPos.row][cpuMove.toPos.col]).toBeTruthy();
+        expect(
+          cpuNewBoard[cpuMove.toPos.row][cpuMove.toPos.col]?.isFirstPlayer
+        ).toBe(false);
+
+        // 元の位置から駒が消えたことを確認
+        expect(cpuNewBoard[cpuMove.fromPos.row][cpuMove.fromPos.col]).toBeNull();
+      }
     }
   });
 });
