@@ -1,7 +1,7 @@
 /** @jsx figma.widget.h */
 
-import { COLORS, LAYOUT } from '../constants';
-import { MenuButton } from './MenuButton';
+import { COLORS, LAYOUT } from "../constants";
+import { MenuButton } from "./MenuButton";
 
 const { AutoLayout, Text } = figma.widget;
 
@@ -26,9 +26,9 @@ export function MenuModal({ title, buttons }: MenuModalProps) {
       positioning="absolute"
       x={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
       y={0}
-      width={LAYOUT.BOARD_AREA_WIDTH}
-      height={LAYOUT.BOARD_AREA_HEIGHT}
-      fill={{ r: 0.3, g: 0.5, b: 0.35, a: 0.9 }}
+      width={720}
+      height={400}
+      fill={COLORS.MENU_BACKGROUND}
       horizontalAlignItems="center"
       verticalAlignItems="center"
     >

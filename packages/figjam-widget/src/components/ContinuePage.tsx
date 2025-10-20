@@ -35,12 +35,12 @@ export function ContinuePage({
       verticalAlignItems="center"
       width={LAYOUT.WIDTH}
       height={LAYOUT.HEIGHT}
-      fill={COLORS.BACKGROUND}
     >
       <GameLayout
         board={board}
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
+        isBlurred={true}
       />
 
       <MenuModal

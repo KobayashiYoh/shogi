@@ -67,6 +67,9 @@ export function CapturedPiecesArea({ pieces, isFirstPlayer }: CapturedPiecesArea
                   positioning="absolute"
                   x={40}
                   y={40}
+                  rotation={isFirstPlayer ? 0 : 180}
+                  stroke="#333333"
+                  strokeWidth={2}
                 >
                   ×{pieceCounts[pieceType]}
                 </Text>

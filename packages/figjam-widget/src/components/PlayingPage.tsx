@@ -45,6 +45,7 @@ export function PlayingPage({
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
         selectedPos={selectedPos}
+        isBlurred={false}
         onCellClick={onCellClick}
       />
 

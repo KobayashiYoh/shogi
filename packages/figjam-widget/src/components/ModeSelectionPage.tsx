@@ -28,12 +28,12 @@ export function ModeSelectionPage({
       verticalAlignItems="center"
       width={LAYOUT.WIDTH}
       height={LAYOUT.HEIGHT}
-      fill={COLORS.BACKGROUND}
     >
       <GameLayout
         board={INITIAL_BOARD}
         firstPlayerCapturedPieces={[]}
         secondPlayerCapturedPieces={[]}
+        isBlurred={true}
       />
 
       <MenuModal

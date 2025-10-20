@@ -9,7 +9,7 @@ export const COLORS = {
   /** 持ち駒エリアの背景色 */
   CAPTURED_AREA: "#3D2817",
   /** モーダルの背景色 */
-  MODAL: "#4A7C59",
+  MENU_BACKGROUND: "#9251FB",
   /** 選択中のマスの色 */
   SELECTED_CELL: "#FFE4B5",
   /** テキスト色（白） */
