@@ -21,13 +21,16 @@ export interface MenuModalProps {
  * メニューモーダルコンポーネント
  */
 export function MenuModal({ title, buttons }: MenuModalProps) {
+  const MODAL_WIDTH = 720;
+  const MODAL_HEIGHT = 400;
+
   return (
     <AutoLayout
       positioning="absolute"
-      x={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
-      y={0}
-      width={720}
-      height={400}
+      x={(LAYOUT.WIDTH - MODAL_WIDTH) / 2}
+      y={(LAYOUT.HEIGHT - MODAL_HEIGHT) / 2}
+      width={MODAL_WIDTH}
+      height={MODAL_HEIGHT}
       fill={COLORS.MENU_BACKGROUND}
       horizontalAlignItems="center"
       verticalAlignItems="center"
