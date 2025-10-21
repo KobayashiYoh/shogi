@@ -4,7 +4,7 @@ import type { PieceType } from "shogi-core";
 import { PieceDisplay } from "./PieceDisplay";
 import { COLORS, LAYOUT } from "../constants";
 
-const { AutoLayout, Text } = figma.widget;
+const { AutoLayout } = figma.widget;
 
 /**
  * 持ち駒エリアコンポーネントのProps
@@ -34,8 +34,8 @@ export function CapturedPiecesArea({ pieces, isFirstPlayer }: CapturedPiecesArea
     <AutoLayout
       direction="vertical"
       spacing={8}
-      horizontalAlignItems="start"
-      verticalAlignItems="start"
+      horizontalAlignItems="center"
+      verticalAlignItems="center"
       fill={COLORS.CAPTURED_AREA}
       width={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
       height={LAYOUT.CAPTURED_PIECES_AREA_WIDTH}
@@ -51,30 +51,12 @@ export function CapturedPiecesArea({ pieces, isFirstPlayer }: CapturedPiecesArea
           verticalAlignItems="start"
         >
           {row.map((pieceType) => (
-            <AutoLayout
+            <PieceDisplay
               key={pieceType}
-              width={60}
-              height={60}
-              horizontalAlignItems="center"
-              verticalAlignItems="center"
-            >
-              <PieceDisplay piece={{ type: pieceType, isFirstPlayer }} />
-              {pieceCounts[pieceType] > 1 && (
-                <Text
-                  fontSize={16}
-                  fill="#FFFFFF"
-                  fontWeight={700}
-                  positioning="absolute"
-                  x={40}
-                  y={40}
-                  rotation={isFirstPlayer ? 0 : 180}
-                  stroke="#333333"
-                  strokeWidth={2}
-                >
-                  ×{pieceCounts[pieceType]}
-                </Text>
-              )}
-            </AutoLayout>
+              piece={{ type: pieceType, isFirstPlayer }}
+              disableRotation={true}
+              count={pieceCounts[pieceType]}
+            />
           ))}
         </AutoLayout>
       ))}
