@@ -120,15 +120,8 @@ export function useShogiGame() {
 
     setBoard(newBoard);
 
-    let updatedSecondPlayerCapturedPieces = secondPlayerCapturedPieces;
     if (capturedPiece) {
       addCapturedPieceToPlayer(capturedPiece, currentPlayerIsFirst);
-      if (currentPlayerIsFirst) {
-        updatedSecondPlayerCapturedPieces = [
-          ...secondPlayerCapturedPieces,
-          capturedPiece,
-        ];
-      }
     }
 
     setSelectedPos(null);
@@ -145,7 +138,7 @@ export function useShogiGame() {
     if (shouldExecuteCpuMove) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const cpuMove = selectCpuMove(newBoard, updatedSecondPlayerCapturedPieces);
+      const cpuMove = selectCpuMove(newBoard, secondPlayerCapturedPieces);
       if (!cpuMove) {
         return;
       }
@@ -154,6 +147,14 @@ export function useShogiGame() {
 
       // 持ち駒を使う場合
       if (capturedPieceType && fromPos === null) {
+        const hasCapturedPiece =
+          secondPlayerCapturedPieces.includes(capturedPieceType);
+        console.log("[CPU] 持ち駒があるか:", hasCapturedPiece);
+        if (!hasCapturedPiece) {
+          console.log("[CPU] 持ち駒がないため配置をスキップ");
+          return;
+        }
+
         const cpuNewBoard: Board = newBoard.map((row) => [...row]);
         cpuNewBoard[toPos.row][toPos.col] = piece;
 
@@ -180,10 +181,20 @@ export function useShogiGame() {
         return;
       }
 
-      const shouldPromoteCpu = shouldCpuPromote(fromPos, toPos, piece.type, false);
+      const shouldPromoteCpu = shouldCpuPromote(
+        fromPos,
+        toPos,
+        piece.type,
+        false
+      );
 
       const { newBoard: cpuNewBoard, capturedPiece: cpuCapturedPiece } =
-        calculateBoardAfterPieceMove(newBoard, fromPos, toPos, shouldPromoteCpu);
+        calculateBoardAfterPieceMove(
+          newBoard,
+          fromPos,
+          toPos,
+          shouldPromoteCpu
+        );
 
       setBoard(cpuNewBoard);
 

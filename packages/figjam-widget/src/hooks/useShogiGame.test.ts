@@ -158,6 +158,25 @@ describe('CPU対戦のロジックテスト', () => {
         }
       }
     });
+
+    it('CPUは持ち駒リストにない駒を配置できない', () => {
+      const emptyBoard: Board = Array.from({ length: 9 }, () =>
+        Array(9).fill(null)
+      );
+
+      emptyBoard[0][4] = { type: 'ou', isFirstPlayer: false };
+      emptyBoard[8][4] = { type: 'ou', isFirstPlayer: true };
+
+      // 持ち駒が空の場合
+      const capturedPieces: PieceType[] = [];
+      const cpuMove = selectCpuMove(emptyBoard, capturedPieces);
+
+      // CPUは盤上の駒を動かすか、nullを返す（持ち駒の配置は選択しない）
+      if (cpuMove && cpuMove.fromPos === null) {
+        // 持ち駒を使う手の場合、capturedPieceTypeが持ち駒リストに含まれていることを確認
+        expect(capturedPieces.includes(cpuMove.capturedPieceType!)).toBe(true);
+      }
+    });
   });
 
   describe('shouldCpuPromote', () => {
