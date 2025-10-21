@@ -42,6 +42,8 @@ function ShogiWidget() {
         board={board}
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
+        gameResult={gameResult}
+        gameMode={gameMode}
       />
     );
   }

@@ -1,7 +1,8 @@
 /** @jsx figma.widget.h */
 
-import type { Board, PieceType } from 'shogi-core';
-import { COLORS, LAYOUT } from '../constants';
+import type { Board, GameMode, GameResult, PieceType } from 'shogi-core';
+import { LAYOUT } from '../constants';
+import { getWinnerMessage } from '../utils';
 import { GameLayout } from './GameLayout';
 import { MenuModal } from './MenuModal';
 
@@ -16,6 +17,8 @@ export interface ContinuePageProps {
   board: Board;
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
+  gameResult: GameResult;
+  gameMode: GameMode;
 }
 
 /**
@@ -27,7 +30,11 @@ export function ContinuePage({
   board,
   firstPlayerCapturedPieces,
   secondPlayerCapturedPieces,
+  gameResult,
+  gameMode,
 }: ContinuePageProps) {
+  const title = getWinnerMessage(gameResult, gameMode);
+
   return (
     <AutoLayout
       direction="vertical"
@@ -44,7 +51,7 @@ export function ContinuePage({
       />
 
       <MenuModal
-        title="Continue?"
+        title={title}
         buttons={[
           {
             title: 'Quit',
