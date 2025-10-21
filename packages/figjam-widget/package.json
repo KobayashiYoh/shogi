@@ -2,19 +2,25 @@
   "dependencies": {
     "@create-figma-plugin/ui": "^4.0.3",
     "@create-figma-plugin/utilities": "^4.0.3",
-    "preact": ">=10"
+    "preact": ">=10",
+    "shogi-core": "file:../shogi-core"
   },
   "devDependencies": {
     "@create-figma-plugin/build": "^4.0.3",
     "@create-figma-plugin/tsconfig": "^4.0.3",
     "@figma/plugin-typings": "1.109.0",
     "@figma/widget-typings": "1.11.0",
-    "typescript": ">=5"
+    "@types/node": "^24.6.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": ">=5",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "build": "build-figma-plugin --typecheck --minify",
     "watch": "build-figma-plugin --typecheck --watch",
-    "test:run": "echo 'No tests for figjam-widget'"
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "figma-plugin": {
     "editorType": [
@@ -23,7 +29,6 @@
     "containsWidget": true,
     "id": "shogi",
     "name": "Shogi",
-    "main": "src/main.tsx",
-    "ui": "src/ui.tsx"
+    "main": "src/main.tsx"
   }
 }

@@ -1,0 +1,1 @@
+export { getWinnerMessage } from './winnerMessage';
