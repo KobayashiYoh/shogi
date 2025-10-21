@@ -15,6 +15,7 @@ export interface PlayingPageProps {
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
   selectedPos: Position | null;
+  possibleMoves: Position[];
   selectedCapturedPiece: PieceType | null;
   isFirstPlayerTurn: boolean;
   pendingMove: { from: Position; to: Position } | null;
@@ -31,6 +32,7 @@ export function PlayingPage({
   firstPlayerCapturedPieces,
   secondPlayerCapturedPieces,
   selectedPos,
+  possibleMoves,
   selectedCapturedPiece,
   isFirstPlayerTurn,
   pendingMove,
@@ -51,6 +53,7 @@ export function PlayingPage({
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
         selectedPos={selectedPos}
+        possibleMoves={possibleMoves}
         selectedCapturedPiece={selectedCapturedPiece}
         isFirstPlayerTurn={isFirstPlayerTurn}
         isBlurred={false}

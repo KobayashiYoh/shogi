@@ -17,6 +17,7 @@ import {
   canPlaceCapturedPiece,
   placeCapturedPiece,
   removeCapturedPiece,
+  getMovablePositions,
 } from "shogi-core";
 
 const { useSyncedState } = figma.widget;
@@ -49,6 +50,10 @@ export function useShogiGame() {
   } | null>("pendingMove", null);
   const [selectedCapturedPiece, setSelectedCapturedPiece] =
     useSyncedState<PieceType | null>("selectedCapturedPiece", null);
+  const [possibleMoves, setPossibleMoves] = useSyncedState<Position[]>(
+    "possibleMoves",
+    []
+  );
 
   /**
    * ゲーム状態を初期化する
@@ -62,6 +67,7 @@ export function useShogiGame() {
     setSelectedPos(null);
     setPendingMove(null);
     setSelectedCapturedPiece(null);
+    setPossibleMoves([]);
   };
 
   /**
@@ -239,6 +245,7 @@ export function useShogiGame() {
 
     setSelectedPos(null);
     setPendingMove(null);
+    setPossibleMoves([]);
     setIsFirstPlayerTurn(!currentPlayerIsFirst);
 
     const result = judgeGameResult(newBoard);
@@ -279,6 +286,7 @@ export function useShogiGame() {
 
     setSelectedCapturedPiece(pieceType);
     setSelectedPos(null);
+    setPossibleMoves([]);
   };
 
   /**
@@ -300,6 +308,11 @@ export function useShogiGame() {
     }
 
     setSelectedPos(clickedPos);
+
+    if (clickedPiece) {
+      const moves = getMovablePositions(board, clickedPos, clickedPiece);
+      setPossibleMoves(moves);
+    }
   };
 
   /**
@@ -314,6 +327,7 @@ export function useShogiGame() {
       selectedPos.row === clickedPos.row && selectedPos.col === clickedPos.col;
     if (isSamePosClicked) {
       setSelectedPos(null);
+      setPossibleMoves([]);
       return;
     }
 
@@ -332,10 +346,13 @@ export function useShogiGame() {
       clickedPiece?.isFirstPlayer === isFirstPlayerTurn;
     if (isOwnPiece) {
       setSelectedPos(clickedPos);
+      const moves = getMovablePositions(board, clickedPos, clickedPiece);
+      setPossibleMoves(moves);
       return;
     }
 
     setSelectedPos(null);
+    setPossibleMoves([]);
   };
 
   /**
@@ -472,6 +489,7 @@ export function useShogiGame() {
     selectedPos,
     pendingMove,
     selectedCapturedPiece,
+    possibleMoves,
     handleSelectGameMode,
     handleQuit,
     handlePlayAgain,

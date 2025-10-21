@@ -12,6 +12,8 @@ export const COLORS = {
   MENU_BACKGROUND: "#9251FB",
   /** 選択中のマスの色 */
   SELECTED_CELL: "#FFE4B5",
+  /** 移動可能なマスの色 */
+  POSSIBLE_MOVE: "#98FB98",
   /** テキスト色（白） */
   TEXT_WHITE: "#FFFFFF",
   /** テキスト色（黒） */

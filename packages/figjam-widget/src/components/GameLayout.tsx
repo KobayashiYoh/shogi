@@ -21,6 +21,7 @@ export interface GameLayoutProps {
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
   selectedPos?: Position | null;
+  possibleMoves?: Position[];
   selectedCapturedPiece?: PieceType | null;
   isFirstPlayerTurn?: boolean;
   isBlurred: boolean;
@@ -36,6 +37,7 @@ export function GameLayout({
   firstPlayerCapturedPieces,
   secondPlayerCapturedPieces,
   selectedPos = null,
+  possibleMoves = [],
   selectedCapturedPiece = null,
   isFirstPlayerTurn = true,
   isBlurred,
@@ -61,6 +63,7 @@ export function GameLayout({
       <Board
         board={board}
         selectedPos={selectedPos}
+        possibleMoves={possibleMoves}
         onCellClick={onCellClick}
       />
       <AutoLayout direction="vertical" height="fill-parent">

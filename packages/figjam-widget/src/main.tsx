@@ -21,6 +21,7 @@ function ShogiWidget() {
     selectedPos,
     pendingMove,
     selectedCapturedPiece,
+    possibleMoves,
     handleSelectGameMode,
     handleQuit,
     handlePlayAgain,
@@ -54,6 +55,7 @@ function ShogiWidget() {
       firstPlayerCapturedPieces={firstPlayerCapturedPieces}
       secondPlayerCapturedPieces={secondPlayerCapturedPieces}
       selectedPos={selectedPos}
+      possibleMoves={possibleMoves}
       selectedCapturedPiece={selectedCapturedPiece}
       isFirstPlayerTurn={isFirstPlayerTurn}
       pendingMove={pendingMove}
