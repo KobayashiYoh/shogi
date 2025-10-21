@@ -15,9 +15,12 @@ export interface PlayingPageProps {
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
   selectedPos: Position | null;
+  selectedCapturedPiece: PieceType | null;
+  isFirstPlayerTurn: boolean;
   pendingMove: { from: Position; to: Position } | null;
   onCellClick: (row: number, col: number) => void;
   onPromotionChoice: (shouldPromote: boolean) => void;
+  onCapturedPieceClick: (pieceType: PieceType) => void;
 }
 
 /**
@@ -28,9 +31,12 @@ export function PlayingPage({
   firstPlayerCapturedPieces,
   secondPlayerCapturedPieces,
   selectedPos,
+  selectedCapturedPiece,
+  isFirstPlayerTurn,
   pendingMove,
   onCellClick,
   onPromotionChoice,
+  onCapturedPieceClick,
 }: PlayingPageProps) {
   return (
     <AutoLayout
@@ -45,8 +51,11 @@ export function PlayingPage({
         firstPlayerCapturedPieces={firstPlayerCapturedPieces}
         secondPlayerCapturedPieces={secondPlayerCapturedPieces}
         selectedPos={selectedPos}
+        selectedCapturedPiece={selectedCapturedPiece}
+        isFirstPlayerTurn={isFirstPlayerTurn}
         isBlurred={false}
         onCellClick={onCellClick}
+        onCapturedPieceClick={onCapturedPieceClick}
       />
 
       {pendingMove && <PromotionDialog onPromotionChoice={onPromotionChoice} />}

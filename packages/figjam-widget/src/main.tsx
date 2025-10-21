@@ -14,16 +14,19 @@ function ShogiWidget() {
   const {
     gameMode,
     board,
+    isFirstPlayerTurn,
     gameResult,
     firstPlayerCapturedPieces,
     secondPlayerCapturedPieces,
     selectedPos,
     pendingMove,
+    selectedCapturedPiece,
     handleSelectGameMode,
     handleQuit,
     handlePlayAgain,
     handleCellClick,
     handlePromotionChoice,
+    handleCapturedPieceClick,
   } = useShogiGame();
 
   // シーン分岐
@@ -49,9 +52,12 @@ function ShogiWidget() {
       firstPlayerCapturedPieces={firstPlayerCapturedPieces}
       secondPlayerCapturedPieces={secondPlayerCapturedPieces}
       selectedPos={selectedPos}
+      selectedCapturedPiece={selectedCapturedPiece}
+      isFirstPlayerTurn={isFirstPlayerTurn}
       pendingMove={pendingMove}
       onCellClick={handleCellClick}
       onPromotionChoice={handlePromotionChoice}
+      onCapturedPieceClick={handleCapturedPieceClick}
     />
   );
 }

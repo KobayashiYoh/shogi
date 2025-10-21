@@ -12,12 +12,19 @@ const { AutoLayout } = figma.widget;
 export interface CapturedPiecesAreaProps {
   pieces: PieceType[];
   isFirstPlayer: boolean;
+  selectedPiece?: PieceType | null;
+  onPieceClick?: (pieceType: PieceType) => void;
 }
 
 /**
  * 持ち駒エリアコンポーネント
  */
-export function CapturedPiecesArea({ pieces, isFirstPlayer }: CapturedPiecesAreaProps) {
+export function CapturedPiecesArea({
+  pieces,
+  isFirstPlayer,
+  selectedPiece = null,
+  onPieceClick = () => {}
+}: CapturedPiecesAreaProps) {
   const pieceCounts = pieces.reduce((acc, pieceType) => {
     acc[pieceType] = (acc[pieceType] || 0) + 1;
     return acc;
@@ -50,14 +57,22 @@ export function CapturedPiecesArea({ pieces, isFirstPlayer }: CapturedPiecesArea
           horizontalAlignItems="start"
           verticalAlignItems="start"
         >
-          {row.map((pieceType) => (
-            <PieceDisplay
-              key={pieceType}
-              piece={{ type: pieceType, isFirstPlayer }}
-              disableRotation={true}
-              count={pieceCounts[pieceType]}
-            />
-          ))}
+          {row.map((pieceType) => {
+            const isSelected = selectedPiece === pieceType;
+            return (
+              <AutoLayout
+                key={pieceType}
+                onClick={() => onPieceClick(pieceType)}
+                opacity={isSelected ? 0.7 : 1}
+              >
+                <PieceDisplay
+                  piece={{ type: pieceType, isFirstPlayer }}
+                  disableRotation={true}
+                  count={pieceCounts[pieceType]}
+                />
+              </AutoLayout>
+            );
+          })}
         </AutoLayout>
       ))}
     </AutoLayout>

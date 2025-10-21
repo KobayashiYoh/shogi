@@ -21,8 +21,11 @@ export interface GameLayoutProps {
   firstPlayerCapturedPieces: PieceType[];
   secondPlayerCapturedPieces: PieceType[];
   selectedPos?: Position | null;
+  selectedCapturedPiece?: PieceType | null;
+  isFirstPlayerTurn?: boolean;
   isBlurred: boolean;
   onCellClick?: (row: number, col: number) => void;
+  onCapturedPieceClick?: (pieceType: PieceType) => void;
 }
 
 /**
@@ -33,8 +36,11 @@ export function GameLayout({
   firstPlayerCapturedPieces,
   secondPlayerCapturedPieces,
   selectedPos = null,
+  selectedCapturedPiece = null,
+  isFirstPlayerTurn = true,
   isBlurred,
   onCellClick = () => {},
+  onCapturedPieceClick = () => {},
 }: GameLayoutProps) {
   return (
     <AutoLayout
@@ -47,6 +53,8 @@ export function GameLayout({
         <CapturedPiecesArea
           pieces={secondPlayerCapturedPieces}
           isFirstPlayer={false}
+          selectedPiece={!isFirstPlayerTurn ? selectedCapturedPiece : null}
+          onPieceClick={!isFirstPlayerTurn ? onCapturedPieceClick : undefined}
         />
         <AutoLayout height="fill-parent" />
       </AutoLayout>
@@ -60,6 +68,8 @@ export function GameLayout({
         <CapturedPiecesArea
           pieces={firstPlayerCapturedPieces}
           isFirstPlayer={true}
+          selectedPiece={isFirstPlayerTurn ? selectedCapturedPiece : null}
+          onPieceClick={isFirstPlayerTurn ? onCapturedPieceClick : undefined}
         />
       </AutoLayout>
     </AutoLayout>

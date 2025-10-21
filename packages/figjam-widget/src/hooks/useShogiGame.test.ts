@@ -8,6 +8,9 @@ import {
   selectCpuMove,
   shouldCpuPromote,
   calculateBoardAfterPieceMove,
+  canPlaceCapturedPiece,
+  placeCapturedPiece,
+  removeCapturedPiece,
 } from 'shogi-core';
 
 /**
@@ -480,5 +483,315 @@ describe('統合テスト: CPU対戦の動作確認', () => {
         expect(cpuNewBoard[cpuMove.fromPos.row][cpuMove.fromPos.col]).toBeNull();
       }
     }
+  });
+});
+
+describe('持ち駒機能のロジックテスト', () => {
+  describe('canPlaceCapturedPiece', () => {
+    it('空いているマスに持ち駒を配置できる', () => {
+      const board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+      board[0][4] = { type: 'ou', isFirstPlayer: false };
+      board[8][4] = { type: 'ou', isFirstPlayer: true };
+
+      const targetPos: Position = { row: 5, col: 5 };
+      expect(canPlaceCapturedPiece(board, targetPos)).toBe(true);
+    });
+
+    it('駒がある場所には持ち駒を配置できない', () => {
+      const board: Board = INITIAL_BOARD;
+      const targetPos: Position = { row: 0, col: 0 };
+      expect(canPlaceCapturedPiece(board, targetPos)).toBe(false);
+    });
+  });
+
+  describe('placeCapturedPiece', () => {
+    it('持ち駒を盤面に正しく配置できる', () => {
+      const board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+      board[0][4] = { type: 'ou', isFirstPlayer: false };
+      board[8][4] = { type: 'ou', isFirstPlayer: true };
+
+      const targetPos: Position = { row: 5, col: 5 };
+      const pieceType: PieceType = 'fu';
+      const isFirstPlayer = true;
+
+      const newBoard = placeCapturedPiece(board, targetPos, pieceType, isFirstPlayer);
+
+      expect(newBoard[5][5]).toBeTruthy();
+      expect(newBoard[5][5]?.type).toBe('fu');
+      expect(newBoard[5][5]?.isFirstPlayer).toBe(true);
+    });
+
+    it('持ち駒を配置しても元の盤面は変更されない', () => {
+      const board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+      const targetPos: Position = { row: 5, col: 5 };
+
+      const newBoard = placeCapturedPiece(board, targetPos, 'fu', true);
+
+      expect(board[5][5]).toBeNull();
+      expect(newBoard[5][5]).toBeTruthy();
+    });
+  });
+
+  describe('removeCapturedPiece', () => {
+    it('持ち駒リストから駒を削除できる', () => {
+      const capturedPieces: PieceType[] = ['fu', 'kin', 'fu'];
+      const updated = removeCapturedPiece(capturedPieces, 'fu');
+
+      expect(updated.length).toBe(2);
+      expect(updated).toContain('kin');
+      expect(updated).toContain('fu');
+    });
+
+    it('存在しない駒を削除しようとしても配列は変わらない', () => {
+      const capturedPieces: PieceType[] = ['fu', 'kin'];
+      const updated = removeCapturedPiece(capturedPieces, 'hisha');
+
+      expect(updated.length).toBe(2);
+      expect(updated).toContain('fu');
+      expect(updated).toContain('kin');
+    });
+
+    it('持ち駒削除は元の配列を変更しない', () => {
+      const capturedPieces: PieceType[] = ['fu', 'kin'];
+      const updated = removeCapturedPiece(capturedPieces, 'fu');
+
+      expect(capturedPieces.length).toBe(2);
+      expect(updated.length).toBe(1);
+    });
+  });
+});
+
+describe('統合テスト: 持ち駒選択と配置', () => {
+  it('持ち駒を選択して盤面に配置できる', () => {
+    const board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+    board[0][4] = { type: 'ou', isFirstPlayer: false };
+    board[8][4] = { type: 'ou', isFirstPlayer: true };
+
+    const firstPlayerCapturedPieces: PieceType[] = ['fu', 'kin'];
+    let selectedCapturedPiece: PieceType | null = null;
+
+    // 持ち駒を選択
+    selectedCapturedPiece = 'fu';
+    expect(selectedCapturedPiece).toBe('fu');
+
+    // 配置可能な位置かチェック
+    const targetPos: Position = { row: 5, col: 5 };
+    const canPlace = canPlaceCapturedPiece(board, targetPos);
+    expect(canPlace).toBe(true);
+
+    // 持ち駒を配置
+    const newBoard = placeCapturedPiece(
+      board,
+      targetPos,
+      selectedCapturedPiece,
+      true
+    );
+
+    // 持ち駒リストから削除
+    const updatedCapturedPieces = removeCapturedPiece(
+      firstPlayerCapturedPieces,
+      selectedCapturedPiece
+    );
+
+    // 検証
+    expect(newBoard[5][5]).toBeTruthy();
+    expect(newBoard[5][5]?.type).toBe('fu');
+    expect(newBoard[5][5]?.isFirstPlayer).toBe(true);
+    expect(updatedCapturedPieces.length).toBe(1);
+    expect(updatedCapturedPieces).toContain('kin');
+  });
+
+  it('同じ持ち駒を再度クリックすると選択解除される', () => {
+    let selectedCapturedPiece: PieceType | null = null;
+
+    // 1回目のクリック: 選択
+    selectedCapturedPiece = 'fu';
+    expect(selectedCapturedPiece).toBe('fu');
+
+    // 2回目のクリック: 選択解除
+    if (selectedCapturedPiece === 'fu') {
+      selectedCapturedPiece = null;
+    }
+    expect(selectedCapturedPiece).toBeNull();
+  });
+
+  it('持ち駒を選択すると盤上の駒の選択が解除される', () => {
+    let selectedPos: Position | null = { row: 6, col: 6 };
+    let selectedCapturedPiece: PieceType | null = null;
+
+    // 持ち駒を選択
+    selectedCapturedPiece = 'fu';
+    selectedPos = null; // 盤上の駒の選択を解除
+
+    expect(selectedCapturedPiece).toBe('fu');
+    expect(selectedPos).toBeNull();
+  });
+});
+
+describe('統合テスト: 2Playerモードで持ち駒の獲得と配置', () => {
+  it('先手と後手が歩兵を進ませて持ち駒を獲得し、それぞれ駒を置くことができる', () => {
+    // 【シナリオ】シンプルな盤面で持ち駒の取り合いをテスト
+    // 簡略化した盤面を作成して、すぐに駒を取り合えるようにする
+
+    let board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+
+    // 王を配置
+    board[0][4] = { type: 'ou', isFirstPlayer: false };
+    board[8][4] = { type: 'ou', isFirstPlayer: true };
+
+    // 先手と後手の歩を近い位置に配置
+    board[5][5] = { type: 'fu', isFirstPlayer: true };  // 先手の歩
+    board[3][5] = { type: 'fu', isFirstPlayer: false }; // 後手の歩（すぐ上）
+    board[5][3] = { type: 'fu', isFirstPlayer: false }; // 後手の歩（別の列）
+    board[7][3] = { type: 'fu', isFirstPlayer: true };  // 先手の歩（すぐ下）
+
+    let firstPlayerCapturedPieces: PieceType[] = [];
+    let secondPlayerCapturedPieces: PieceType[] = [];
+
+    // 【1】先手が歩を前進させて後手の歩を取る（row:5, col:5 → row:4, col:5 → row:3, col:5）
+    const move1From: Position = { row: 5, col: 5 };
+    const move1To: Position = { row: 4, col: 5 };
+    const result1 = calculateBoardAfterPieceMove(board, move1From, move1To, false);
+    board = result1.newBoard;
+
+    const move2From: Position = { row: 4, col: 5 };
+    const move2To: Position = { row: 3, col: 5 };
+    const result2 = calculateBoardAfterPieceMove(board, move2From, move2To, false);
+    board = result2.newBoard;
+
+    if (result2.capturedPiece) {
+      firstPlayerCapturedPieces.push(result2.capturedPiece);
+    }
+
+    expect(firstPlayerCapturedPieces.length).toBe(1);
+    expect(firstPlayerCapturedPieces[0]).toBe('fu');
+
+    // 【2】後手が歩を前進させて先手の歩を取る（row:5, col:3 → row:6, col:3 → row:7, col:3）
+    const move3From: Position = { row: 5, col: 3 };
+    const move3To: Position = { row: 6, col: 3 };
+    const result3 = calculateBoardAfterPieceMove(board, move3From, move3To, false);
+    board = result3.newBoard;
+
+    const move4From: Position = { row: 6, col: 3 };
+    const move4To: Position = { row: 7, col: 3 };
+    const result4 = calculateBoardAfterPieceMove(board, move4From, move4To, false);
+    board = result4.newBoard;
+
+    if (result4.capturedPiece) {
+      secondPlayerCapturedPieces.push(result4.capturedPiece);
+    }
+
+    expect(secondPlayerCapturedPieces.length).toBe(1);
+    expect(secondPlayerCapturedPieces[0]).toBe('fu');
+
+    // 【3】先手が持ち駒の歩を配置する
+    const firstPlayerPlacePos: Position = { row: 4, col: 4 };
+
+    // 配置可能か確認
+    const canPlaceFirst = canPlaceCapturedPiece(board, firstPlayerPlacePos);
+    expect(canPlaceFirst).toBe(true);
+
+    // 持ち駒を配置
+    const selectedFirstPiece = firstPlayerCapturedPieces[0];
+    board = placeCapturedPiece(
+      board,
+      firstPlayerPlacePos,
+      selectedFirstPiece,
+      true
+    );
+
+    // 持ち駒リストから削除
+    firstPlayerCapturedPieces = removeCapturedPiece(
+      firstPlayerCapturedPieces,
+      selectedFirstPiece
+    );
+
+    // 検証
+    expect(board[4][4]).toBeTruthy();
+    expect(board[4][4]?.type).toBe('fu');
+    expect(board[4][4]?.isFirstPlayer).toBe(true);
+    expect(firstPlayerCapturedPieces.length).toBe(0);
+
+    // 【4】後手が持ち駒の歩を配置する
+    const secondPlayerPlacePos: Position = { row: 5, col: 4 };
+
+    // 配置可能か確認
+    const canPlaceSecond = canPlaceCapturedPiece(board, secondPlayerPlacePos);
+    expect(canPlaceSecond).toBe(true);
+
+    // 持ち駒を配置
+    const selectedSecondPiece = secondPlayerCapturedPieces[0];
+    board = placeCapturedPiece(
+      board,
+      secondPlayerPlacePos,
+      selectedSecondPiece,
+      false
+    );
+
+    // 持ち駒リストから削除
+    secondPlayerCapturedPieces = removeCapturedPiece(
+      secondPlayerCapturedPieces,
+      selectedSecondPiece
+    );
+
+    // 検証
+    expect(board[5][4]).toBeTruthy();
+    expect(board[5][4]?.type).toBe('fu');
+    expect(board[5][4]?.isFirstPlayer).toBe(false);
+    expect(secondPlayerCapturedPieces.length).toBe(0);
+  });
+
+  it('2Playerモードで持ち駒を使った手と盤上の駒を動かす手を交互に指せる', () => {
+    // 簡略化した盤面を作成
+    let board: Board = Array.from({ length: 9 }, () => Array(9).fill(null));
+    board[0][4] = { type: 'ou', isFirstPlayer: false };
+    board[8][4] = { type: 'ou', isFirstPlayer: true };
+    board[6][6] = { type: 'fu', isFirstPlayer: true };
+    board[2][2] = { type: 'fu', isFirstPlayer: false };
+
+    let firstPlayerCapturedPieces: PieceType[] = ['kin'];
+    let secondPlayerCapturedPieces: PieceType[] = ['gin'];
+
+    // 【1】先手が持ち駒の金を配置
+    const firstPlacePos: Position = { row: 5, col: 5 };
+    expect(canPlaceCapturedPiece(board, firstPlacePos)).toBe(true);
+
+    board = placeCapturedPiece(board, firstPlacePos, 'kin', true);
+    firstPlayerCapturedPieces = removeCapturedPiece(firstPlayerCapturedPieces, 'kin');
+
+    expect(board[5][5]).toBeTruthy();
+    expect(board[5][5]?.type).toBe('kin');
+    expect(firstPlayerCapturedPieces.length).toBe(0);
+
+    // 【2】後手が盤上の歩を動かす
+    const secondMoveFrom: Position = { row: 2, col: 2 };
+    const secondMoveTo: Position = { row: 3, col: 2 };
+    const result = calculateBoardAfterPieceMove(board, secondMoveFrom, secondMoveTo, false);
+    board = result.newBoard;
+
+    expect(board[3][2]).toBeTruthy();
+    expect(board[3][2]?.type).toBe('fu');
+    expect(board[2][2]).toBeNull();
+
+    // 【3】先手が盤上の歩を動かす
+    const thirdMoveFrom: Position = { row: 6, col: 6 };
+    const thirdMoveTo: Position = { row: 5, col: 6 };
+    const result2 = calculateBoardAfterPieceMove(board, thirdMoveFrom, thirdMoveTo, false);
+    board = result2.newBoard;
+
+    expect(board[5][6]).toBeTruthy();
+    expect(board[5][6]?.type).toBe('fu');
+
+    // 【4】後手が持ち駒の銀を配置
+    const secondPlacePos: Position = { row: 4, col: 4 };
+    expect(canPlaceCapturedPiece(board, secondPlacePos)).toBe(true);
+
+    board = placeCapturedPiece(board, secondPlacePos, 'gin', false);
+    secondPlayerCapturedPieces = removeCapturedPiece(secondPlayerCapturedPieces, 'gin');
+
+    expect(board[4][4]).toBeTruthy();
+    expect(board[4][4]?.type).toBe('gin');
+    expect(board[4][4]?.isFirstPlayer).toBe(false);
+    expect(secondPlayerCapturedPieces.length).toBe(0);
   });
 });
